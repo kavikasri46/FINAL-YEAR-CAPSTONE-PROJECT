@@ -1,0 +1,6 @@
+| mentor | subject | time | room | status |
+| ------ | ------- | ---- | ---- | ------ |
+| Ravi   | Math    | 9AM  | A101 | busy   |
+| Priya  | Java    | 9AM  | A102 | free   |
+| Arun   | AI      | 10AM | A103 | busy   |
+| Meena  | DBMS    | 10AM | A104 | free   |
