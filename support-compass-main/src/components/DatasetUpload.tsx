@@ -1,110 +1,54 @@
 import { useState } from "react";
 import Papa from "papaparse";
-import { firebase, db } from "@/integrations/supabase/client";
-import { collection, addDoc, setDoc, doc } from "firebase/firestore";
+import { Upload } from "lucide-react";
+import { api } from "@/services/api";
 
-interface Student {
-  student_id: string;
-  name: string;
-  risk_score: number;
-}
-
-const DatasetUpload: React.FC = () => {
+export default function DatasetUpload() {
   const [loading, setLoading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<{
-    type: "success" | "error" | null;
-    message: string;
-  }>({ type: null, message: "" });
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     setLoading(true);
-    setUploadStatus({ type: null, message: "" });
+    setMessage("");
+    setError("");
 
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
         try {
-          const students = results.data as Student[];
-
-          const batchSize = 100;
-
-          for (let i = 0; i < students.length; i += batchSize) {
-            const batch = students.slice(i, i + batchSize);
-
-            // Use Promise.all to handle batch operations
-            const batchPromises = batch.map(async (student) => {
-              const studentRef = doc(db, "students", student.student_id);
-              await setDoc(studentRef, student, { merge: true });
-            });
-
-            await Promise.all(batchPromises);
-          }
-
-          setUploadStatus({
-            type: "success",
-            message: `Successfully uploaded ${students.length} students!`,
-          });
-        } catch (error) {
-          console.error("Upload error:", error);
-          setUploadStatus({
-            type: "error",
-            message: "Failed to upload dataset. Please try again.",
-          });
+          const students = results.data as any[];
+          const count = await api.bulkUploadStudents(students);
+          setMessage(`Successfully uploaded ${count.count} students.`);
+        } catch (err: any) {
+          setError(err.message || "Upload failed");
         } finally {
           setLoading(false);
-          event.target.value = "";
         }
       },
-      error: (error) => {
-        console.error("CSV parsing error:", error);
-        setUploadStatus({
-          type: "error",
-          message: "Failed to parse CSV file. Please check the format.",
-        });
+      error: () => {
+        setError("Failed to parse CSV file.");
         setLoading(false);
       },
     });
   };
 
   return (
-    <div className="p-4 bg-white rounded shadow">
-      <h2 className="text-lg font-bold mb-3">Upload Student Dataset</h2>
-
-      <input
-        type="file"
-        accept=".csv"
-        onChange={handleFileUpload}
-        disabled={loading}
-        className="mb-3 block w-full text-sm text-gray-500
-        file:mr-4 file:py-2 file:px-4
-        file:rounded-md file:border-0
-        file:text-sm file:font-semibold
-        file:bg-blue-50 file:text-blue-700
-        hover:file:bg-blue-100"
-      />
-
-      {loading && (
-        <div className="flex items-center gap-2">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-          <p className="text-blue-600">Processing dataset...</p>
-        </div>
-      )}
-
-      {uploadStatus.type === "success" && (
-        <p className="text-green-600 mt-2">{uploadStatus.message}</p>
-      )}
-
-      {uploadStatus.type === "error" && (
-        <p className="text-red-600 mt-2">{uploadStatus.message}</p>
-      )}
+    <div className="p-6">
+      <h2 className="text-lg font-semibold mb-4">Upload Student Dataset (CSV)</h2>
+      <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
+        <input type="file" accept=".csv" onChange={handleFileUpload} disabled={loading} className="hidden" id="csv-input" />
+        <label htmlFor="csv-input" className="cursor-pointer flex flex-col items-center gap-2">
+          <Upload className="h-8 w-8 text-muted-foreground" />
+          <span className="text-sm font-medium">{loading ? "Uploading..." : "Click to upload CSV"}</span>
+          <span className="text-xs text-muted-foreground">Columns: student_id, name, risk_score</span>
+        </label>
+      </div>
+      {message && <p className="mt-3 text-sm text-green-600">{message}</p>}
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
     </div>
   );
-};
-
-export default DatasetUpload;
+}

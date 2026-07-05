@@ -3,11 +3,10 @@ import { StatsCard } from "@/components/StatsCard";
 import { StudentTable } from "@/components/StudentTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { useEffect, useState, useCallback } from "react";
-import { firebase, db } from "@/integrations/supabase/client";
-import { collection, onSnapshot, query, orderBy, getDocs } from "firebase/firestore";
+import { useEffect, useState } from "react";
 import Papa from 'papaparse';
 import { useToast } from "@/components/ui/use-toast";
+import { api } from "@/services/api";
 
 interface Student {
   id: string;
@@ -34,61 +33,31 @@ export default function MentorDashboard() {
   
   const { toast } = useToast();
 
-  // Fetch students from Firestore
-  const fetchStudents = useCallback(async () => {
+  const fetchStudents = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, "students"), orderBy("risk_score", "desc"));
-      const querySnapshot = await getDocs(q);
-      const studentsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Student[];
-
-      setStudents(studentsData);
-
-      // Update stats based on real data
-      const highRiskCount = studentsData.filter(s => s.risk_score >= 75).length;
-      const avgGpa = studentsData.reduce((acc, s) => acc + (s.gpa || 0), 0) / (studentsData.length || 1);
-
+      const data = await api.getStudents();
+      setStudents(data);
+      const highRiskCount = data.filter((s: any) => s.risk_score >= 75).length;
+      const avgGpa = data.reduce((acc: number, s: any) => acc + (s.gpa || 0), 0) / (data.length || 1);
       setStats({
-        total: studentsData.length,
+        total: data.length,
         highRisk: highRiskCount,
-        sessionsThisWeek: 5, // This could also come from a sessions table
-        avgGpa: Number(avgGpa.toFixed(1)) || 2.8
+        sessionsThisWeek: 5,
+        avgGpa: Number(avgGpa.toFixed(1)) || 2.8,
       });
     } catch (error) {
       console.error("Error fetching students:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch student data",
-        variant: "destructive",
-      });
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  };
 
-  // Real-time subscription
-  useEffect(() => {
-    fetchStudents();
+  useEffect(() => { fetchStudents(); }, []);
 
-    const q = query(collection(db, "students"), orderBy("created_at", "desc"));
-    const unsubscribe = onSnapshot(q, () => {
-      fetchStudents();
-      toast({
-        title: "Data Updated",
-        description: "Student data has been refreshed",
-      });
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [fetchStudents, toast]);
-
-  // Handle CSV upload
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     setUploadLoading(true);
 
     Papa.parse(file, {
@@ -97,62 +66,27 @@ export default function MentorDashboard() {
       complete: async (results) => {
         try {
           const students = results.data as Student[];
-          
-          // Validate data
           const validStudents = students.filter(s => s.student_id && s.name);
-          
-          if (validStudents.length === 0) {
-            throw new Error('No valid student data found');
-          }
+          if (validStudents.length === 0) throw new Error('No valid student data found');
 
-          // Upload in batches
-          const batchSize = 50;
-          let successCount = 0;
-          
-          for (let i = 0; i < validStudents.length; i += batchSize) {
-            const batch = validStudents.slice(i, i + batchSize);
-            
-            const { error } = await supabase
-              .from("students")
-              .upsert(batch, { 
-                onConflict: 'student_id',
-                ignoreDuplicates: false 
-              });
+          await api.bulkUploadStudents(validStudents);
 
-            if (error) throw error;
-            successCount += batch.length;
-          }
-
-          toast({
-            title: "Success!",
-            description: `Successfully imported ${successCount} students`,
-          });
-          
+          toast({ title: "Success!", description: `Imported ${validStudents.length} students` });
+          fetchStudents();
         } catch (error: unknown) {
-          console.error('Upload error:', error);
-          toast({
-            title: "Upload Failed",
-            description: error instanceof Error ? error.message : 'Failed to import dataset',
-            variant: "destructive",
-          });
+          toast({ title: "Upload Failed", description: error instanceof Error ? error.message : 'Failed to import', variant: "destructive" });
         } finally {
           setUploadLoading(false);
           event.target.value = '';
         }
       },
-      error: (error) => {
-        console.error('CSV parsing error:', error);
-        toast({
-          title: "Parse Error",
-          description: 'Failed to parse CSV file. Please check the format.',
-          variant: "destructive",
-        });
+      error: () => {
+        toast({ title: "Parse Error", description: 'Failed to parse CSV file.', variant: "destructive" });
         setUploadLoading(false);
       }
     });
   };
 
-  // Download template
   const downloadTemplate = () => {
     const headers = ['student_id', 'name', 'risk_score', 'gpa', 'attendance', 'email', 'grade'];
     const sampleData = [
@@ -160,12 +94,7 @@ export default function MentorDashboard() {
       ['STU002', 'Vikram Singh', '92', '1.8', '45', 'vikram@example.com', '11th'],
       ['STU003', 'Rahul Kumar', '45', '3.2', '88', 'rahul@example.com', '10th'],
     ];
-    
-    const csvContent = [
-      headers.join(','),
-      ...sampleData.map(row => row.join(','))
-    ].join('\n');
-    
+    const csvContent = [headers.join(','), ...sampleData.map(row => row.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -173,44 +102,20 @@ export default function MentorDashboard() {
     a.download = 'student_template.csv';
     a.click();
     window.URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Template Downloaded",
-      description: "CSV template has been downloaded",
-    });
+    toast({ title: "Template Downloaded", description: "CSV template has been downloaded" });
   };
 
-  // Generate recommendations based on real data
   const getRecommendations = () => {
-    const recommendations = [];
-    
-    // High risk students
+    const recommendations: { student: string; action: string; priority: string }[] = [];
     students.filter(s => s.risk_score >= 75).slice(0, 2).forEach(student => {
-      recommendations.push({
-        student: student.name,
-        action: `Schedule urgent counseling session. Risk score: ${student.risk_score}`,
-        priority: "high"
-      });
+      recommendations.push({ student: student.name, action: `Schedule urgent counseling session. Risk score: ${student.risk_score}`, priority: "high" });
     });
-    
-    // Attendance issues
     students.filter(s => s.attendance && s.attendance < 60).slice(0, 1).forEach(student => {
-      recommendations.push({
-        student: student.name,
-        action: `Contact parent about attendance. Below 60% threshold.`,
-        priority: "high"
-      });
+      recommendations.push({ student: student.name, action: "Contact parent about attendance. Below 60% threshold.", priority: "high" });
     });
-    
-    // GPA drop suggestions
     if (recommendations.length < 3) {
-      recommendations.push({
-        student: "General",
-        action: "Assign study groups for Math and Science support.",
-        priority: "medium"
-      });
+      recommendations.push({ student: "General", action: "Assign study groups for Math and Science support.", priority: "medium" });
     }
-    
     return recommendations.slice(0, 3);
   };
 
@@ -221,70 +126,24 @@ export default function MentorDashboard() {
           <h1 className="text-2xl font-display font-bold">Mentor Dashboard</h1>
           <p className="text-muted-foreground text-sm">Manage your assigned students and sessions</p>
         </div>
-        
-        {/* CSV Import Section */}
         <div className="flex gap-2">
-          <button
-            onClick={downloadTemplate}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors"
-          >
-            <Download className="h-4 w-4" />
-            Template
+          <button onClick={downloadTemplate} className="flex items-center gap-2 px-3 py-2 text-sm bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors">
+            <Download className="h-4 w-4" /> Template
           </button>
           <div className="relative">
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleFileUpload}
-              disabled={uploadLoading}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              id="csv-upload"
-            />
-            <label
-              htmlFor="csv-upload"
-              className={`flex items-center gap-2 px-3 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors cursor-pointer ${
-                uploadLoading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              <Upload className="h-4 w-4" />
-              {uploadLoading ? 'Uploading...' : 'Import CSV'}
+            <input type="file" accept=".csv" onChange={handleFileUpload} disabled={uploadLoading} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" id="csv-upload" />
+            <label htmlFor="csv-upload" className={`flex items-center gap-2 px-3 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors cursor-pointer ${uploadLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+              <Upload className="h-4 w-4" /> {uploadLoading ? 'Uploading...' : 'Import CSV'}
             </label>
           </div>
         </div>
       </div>
 
-      {uploadLoading && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-          <p className="text-sm text-blue-700">Processing CSV file...</p>
-        </div>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard 
-          title="Assigned Students" 
-          value={stats.total.toString()} 
-          icon={Users} 
-          variant="primary" 
-        />
-        <StatsCard 
-          title="High Risk Students" 
-          value={stats.highRisk.toString()} 
-          icon={AlertTriangle} 
-          variant="danger" 
-        />
-        <StatsCard 
-          title="Sessions This Week" 
-          value={stats.sessionsThisWeek.toString()} 
-          icon={Calendar} 
-          variant="success" 
-        />
-        <StatsCard 
-          title="Avg Student GPA" 
-          value={stats.avgGpa.toString()} 
-          icon={TrendingUp} 
-          trend={{ value: 2, positive: false }} 
-        />
+        <StatsCard title="Assigned Students" value={stats.total.toString()} icon={Users} variant="primary" />
+        <StatsCard title="High Risk Students" value={stats.highRisk.toString()} icon={AlertTriangle} variant="danger" />
+        <StatsCard title="Sessions This Week" value={stats.sessionsThisWeek.toString()} icon={Calendar} variant="success" />
+        <StatsCard title="Avg Student GPA" value={stats.avgGpa.toString()} icon={TrendingUp} trend={{ value: 2, positive: false }} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -298,24 +157,14 @@ export default function MentorDashboard() {
             <StudentTable students={students.slice(0, 5)} />
           )}
         </div>
-
         <Card className="glass-card border-border/50">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold">Recommendations</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {getRecommendations().map((rec, i) => (
-              <motion.div 
-                key={i} 
-                initial={{ opacity: 0, x: 10 }} 
-                animate={{ opacity: 1, x: 0 }} 
-                transition={{ delay: i * 0.1 }}
-                className={`p-3 rounded-lg border text-sm ${
-                  rec.priority === "high" 
-                    ? "bg-destructive/5 border-destructive/20" 
-                    : "bg-warning/5 border-warning/20"
-                }`}
-              >
+              <motion.div key={i} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
+                className={`p-3 rounded-lg border text-sm ${rec.priority === "high" ? "bg-destructive/5 border-destructive/20" : "bg-warning/5 border-warning/20"}`}>
                 <p className="font-medium text-xs">{rec.student}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{rec.action}</p>
               </motion.div>

@@ -10,10 +10,9 @@ import { motion } from "framer-motion";
 /* NEW IMPORTS (ADDED) */
 import * as XLSX from "xlsx";
 import KNN from "ml-knn";
-import { firebase, db } from "@/integrations/supabase/client";
-import { collection, addDoc } from "firebase/firestore";
 import { useState } from "react";
 import { NotificationBanner } from "@/components/NotificationBanner";
+import { api } from "@/services/api";
 
 interface TimetableEntry {
   class?: string;
@@ -67,27 +66,14 @@ export default function AdminDashboard() {
       }
 
       try {
-
-        for (const row of rows) {
-
-          await addDoc(collection(db, "timetable"), {
-            class: row.class,
-            subject: row.subject,
-            mentor: row.mentor,
-            day: row.day,
-            time: row.time,
-            room: row.room
-          });
-
-        }
-
+        await api.bulkUploadTimetable(rows.map(r => ({
+          class: r.class, subject: r.subject, mentor: r.mentor,
+          day: r.day, time: r.time, room: r.room
+        })));
         setUploadStatus("Timetable uploaded successfully");
-
       } catch (error) {
-
         console.error(error);
         setUploadStatus("Upload failed");
-
       }
 
     };
