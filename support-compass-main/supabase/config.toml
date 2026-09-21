@@ -1,4 +1,0 @@
-project_id = "jnszhhfzwtovvdqxrmvo"
-
-[functions.predict-dropout]
-verify_jwt = false
