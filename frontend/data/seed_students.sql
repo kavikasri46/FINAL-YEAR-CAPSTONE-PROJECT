@@ -1,0 +1,30 @@
+-- SQL seed for `students` table
+-- Adjust column names/types if your table differs. Run in Supabase SQL editor.
+INSERT INTO public.students (student_id, name, risk_score, gpa, attendance, email, grade) VALUES
+('STU001','Arjun Patel',85,2.1,95,'arjun.patel@example.com','12th'),
+('STU002','Vikram Singh',92,1.8,45,'vikram.singh@example.com','11th'),
+('STU003','Rahul Kumar',45,3.2,88,'rahul.kumar@example.com','10th'),
+('STU004','Sana Iqbal',78,2.4,72,'sana.iqbal@example.com','12th'),
+('STU005','Meera Nair',58,2.7,64,'meera.nair@example.com','11th'),
+('STU006','Daniel Brown',33,3.8,98,'daniel.brown@example.com','12th'),
+('STU007','Aisha Khan',67,2.9,58,'aisha.khan@example.com','10th'),
+('STU008','Lucas Silva',49,3.1,82,'lucas.silva@example.com','11th'),
+('STU009','Olivia Martin',74,2.5,69,'olivia.martin@example.com','12th'),
+('STU010','Noah Wilson',81,1.9,50,'noah.wilson@example.com','11th'),
+('STU011','Emma Thomas',22,3.9,99,'emma.thomas@example.com','10th'),
+('STU012','Liam Garcia',69,2.8,61,'liam.garcia@example.com','12th'),
+('STU013','Sophia Lee',55,3.0,72,'sophia.lee@example.com','11th'),
+('STU014','James Anderson',47,3.3,85,'james.anderson@example.com','10th'),
+('STU015','Isabella Moore',88,1.7,42,'isabella.moore@example.com','12th'),
+('STU016','Benjamin Taylor',60,2.6,67,'benjamin.taylor@example.com','11th'),
+('STU017','Charlotte Harris',39,3.5,90,'charlotte.harris@example.com','10th'),
+('STU018','Henry Clark',73,2.4,70,'henry.clark@example.com','12th'),
+('STU019','Mia Robinson',52,3.0,75,'mia.robinson@example.com','11th'),
+('STU020','Ethan Lewis',95,1.5,30,'ethan.lewis@example.com','12th')
+ON CONFLICT (student_id) DO UPDATE
+SET name = EXCLUDED.name,
+    risk_score = EXCLUDED.risk_score,
+    gpa = EXCLUDED.gpa,
+    attendance = EXCLUDED.attendance,
+    email = EXCLUDED.email,
+    grade = EXCLUDED.grade;
