@@ -1,7 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  LayoutDashboard, Users, GraduationCap, UserCheck, BarChart3, Bell, Calendar, LogOut, ChevronDown, Shield, Upload, AlertTriangle
+  LayoutDashboard, Users, GraduationCap, UserCheck, BarChart3, Bell, Calendar, LogOut, ChevronDown, Shield, Upload, AlertTriangle,
+  Database, Layers, Activity, BookOpen, FileText, Cpu, RefreshCw, PieChart,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -20,6 +21,18 @@ const adminNav = [
   { title: "Sessions", url: "/sessions", icon: Calendar },
   { title: "Parent Alerts", url: "/parent-alerts", icon: AlertTriangle },
   { title: "Notifications", url: "/notifications", icon: Bell },
+];
+
+const adminERPNav = [
+  { title: "ERP Dashboard",     url: "/erp",                icon: Database   },
+  { title: "Sync ERP",          url: "/erp/sync",           icon: RefreshCw  },
+  { title: "Academic Records",  url: "/erp/academic-records",icon: Users      },
+  { title: "Attendance",        url: "/erp/attendance",     icon: Activity   },
+  { title: "Internal Marks",    url: "/erp/internal-marks", icon: BarChart3  },
+  { title: "Semester Results",  url: "/erp/semester-results",icon: BookOpen  },
+  { title: "AI Analytics",      url: "/erp/ai-analytics",   icon: Cpu        },
+  { title: "Academic Reports",  url: "/erp/reports",        icon: FileText   },
+  { title: "ERP Charts",        url: "/erp/charts",         icon: PieChart   },
 ];
 
 const studentNav = [
@@ -92,6 +105,31 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {user.role === "admin" && (
+          <SidebarGroup className="mt-4">
+            <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest px-3">ERP Integration</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminERPNav.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        end={item.url === "/erp"}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/70 hover:text-sidebar-primary-foreground hover:bg-sidebar-accent transition-all text-sm"
+                        activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium neon-item-active"
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="p-3 border-t border-sidebar-border">

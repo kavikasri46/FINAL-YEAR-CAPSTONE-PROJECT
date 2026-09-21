@@ -4,6 +4,11 @@ import { generateToken } from "../middleware/auth.js";
 
 const router = Router();
 
+router.post("/demo-token", (req, res) => {
+  const token = generateToken({ _id: "demo-admin", email: "admin@school.edu", role: "admin" });
+  res.json({ token, user: { id: "demo-admin", name: "Admin User", email: "admin@school.edu", role: "admin" } });
+});
+
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password, role } = req.body;

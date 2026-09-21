@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, Users, Video, Plus, X, Play } from "lucide-react";
+import { Calendar, Users, Video, Plus, X, Play, FileText, Upload, Trash2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,6 @@ interface Session {
   title: string;
   description?: string;
   date: string;
-  time: string;
   youtubeUrl?: string;
   type: string;
   status: string;
@@ -28,9 +27,29 @@ interface Session {
   createdAt: string;
 }
 
+interface Document {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  uploadedBy: string;
+  uploadedByName: string;
+  date: string;
+  dataUrl: string;
+}
+
 function getYoutubeEmbed(url: string): string {
   const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
   return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+}
+
+function loadDocuments(): Document[] {
+  try { return JSON.parse(localStorage.getItem("documents") || "[]"); }
+  catch { return []; }
+}
+
+function saveDocuments(docs: Document[]) {
+  localStorage.setItem("documents", JSON.stringify(docs));
 }
 
 export default function Sessions() {
@@ -39,7 +58,9 @@ export default function Sessions() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
-  const [form, setForm] = useState({ title: "", description: "", date: "", time: "", youtubeUrl: "" });
+  const [form, setForm] = useState({ title: "", description: "", date: "", youtubeUrl: "" });
+  const [documents, setDocuments] = useState<Document[]>(loadDocuments());
+  const [uploading, setUploading] = useState(false);
 
   const fetchSessions = async () => {
     try {
@@ -58,7 +79,7 @@ export default function Sessions() {
     e.preventDefault();
     try {
       await api.createSession(form);
-      setForm({ title: "", description: "", date: "", time: "", youtubeUrl: "" });
+      setForm({ title: "", description: "", date: "", youtubeUrl: "" });
       setShowForm(false);
       fetchSessions();
     } catch (err) {
@@ -66,15 +87,45 @@ export default function Sessions() {
     }
   };
 
+  const handleDocumentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      const newDoc: Document = {
+        id: Date.now().toString(),
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        uploadedBy: user.id,
+        uploadedByName: user.name,
+        date: new Date().toISOString().split("T")[0],
+        dataUrl,
+      };
+      const updated = [newDoc, ...documents];
+      setDocuments(updated);
+      saveDocuments(updated);
+      setUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDeleteDocument = (id: string) => {
+    const updated = documents.filter((d) => d.id !== id);
+    setDocuments(updated);
+    saveDocuments(updated);
+  };
+
   const isMentor = user?.role === "mentor";
-  const isStudent = user?.role === "student";
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold">Sessions</h1>
-          <p className="text-muted-foreground text-sm">Mentor-student meetings with video resources</p>
+          <h1 className="text-2xl font-display font-bold">Sessions & Resources</h1>
+          <p className="text-muted-foreground text-sm">Learning sessions, videos and study materials</p>
         </div>
         {isMentor && (
           <Button size="sm" className="gap-1.5" onClick={() => setShowForm(!showForm)}>
@@ -101,10 +152,6 @@ export default function Sessions() {
                 <div className="space-y-2">
                   <Label>Date</Label>
                   <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required />
-                </div>
-                <div className="space-y-2">
-                  <Label>Time</Label>
-                  <Input type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} required />
                 </div>
               </div>
               <div className="space-y-2">
@@ -148,9 +195,8 @@ export default function Sessions() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground"><Calendar className="h-3.5 w-3.5" /> {s.date}</div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground"><Clock className="h-3.5 w-3.5" /> {s.time}</div>
                   {s.description && <p className="text-xs text-muted-foreground">{s.description}</p>}
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground"><Users className="h-3.5 w-3.5" /> {s.type.replace(/-/g, " → ")}</div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground"><Users className="h-3.5 w-3.5" /> {s.type && s.type.replace(/-/g, " → ")}</div>
                   {s.youtubeUrl && (
                     <Button onClick={() => setSelectedVideo(getYoutubeEmbed(s.youtubeUrl!))} variant="outline" size="sm" className="w-full mt-2 gap-1.5">
                       <Play className="h-3.5 w-3.5" /> Watch Video
@@ -161,6 +207,65 @@ export default function Sessions() {
             </motion.div>
           ))}
         </div>
+      )}
+
+      {isMentor && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Upload className="h-4 w-4" /> Upload Study Materials
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="doc-upload">Upload PDF, Word, or other documents</Label>
+              <Input id="doc-upload" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.zip" onChange={handleDocumentUpload} disabled={uploading} className="mt-1" />
+              {uploading && <p className="text-xs text-muted-foreground">Uploading...</p>}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {documents.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <FileText className="h-4 w-4" /> Study Materials & Question Papers ({documents.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {documents.map((doc) => (
+              <motion.div
+                key={doc.id}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <FileText className="h-5 w-5 text-purple-400 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{doc.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Uploaded by {doc.uploadedByName} on {doc.date} | {(doc.size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 ml-3">
+                  <a href={doc.dataUrl} download={doc.name}>
+                    <Button size="sm" variant="outline" className="gap-1">
+                      <Download className="h-3.5 w-3.5" /> Download
+                    </Button>
+                  </a>
+                  {isMentor && (
+                    <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDeleteDocument(doc.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </CardContent>
+        </Card>
       )}
     </div>
   );

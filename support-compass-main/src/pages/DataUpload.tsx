@@ -20,6 +20,7 @@ interface StudentData {
   grade: string;
   gpa: number;
   attendance: number;
+  marks: number;
   parent_phone?: string;
   parent_email?: string;
   assignments_completed?: number;
@@ -32,6 +33,7 @@ interface PredictionResult {
   factors: Record<string, string>;
   gpa: number;
   attendance: number;
+  marks: number;
 }
 
 const PIE_COLORS: Record<string, string> = {
@@ -58,12 +60,13 @@ export default function DataUpload() {
 
   const mapToStudentData = (rows: Record<string, unknown>[]): StudentData[] => {
     return rows.map((row) => ({
-      name: String(row.name || row.Name || ""),
-      email: String(row.email || row.Email || ""),
-      grade: String(row.grade || row.Grade || ""),
-      gpa: parseFloat(String(row.gpa || row.GPA || "0")),
-      attendance: parseFloat(String(row.attendance || row.Attendance || "0")),
-      parent_phone: String(row.parent_phone || row.ParentPhone || ""),
+      name: String(row.name || row.Name || row.NAME || row.student_name || row.Student_Name || ""),
+      email: String(row.email || row.Email || row.EMAIL || ""),
+      grade: String(row.grade || row.Grade || row.GRADE || ""),
+      gpa: parseFloat(String(row.cgpa || row.CGPA || row.gpa || row.GPA || "0")),
+      attendance: parseFloat(String(row.attendance || row.Attendance || row.ATTENDANCE || row["Attendance %"] || row.attendance_percentage || "0")),
+      marks: parseFloat(String(row.marks || row.Marks || row.MARKS || row.mark || row.Mark || row.total_marks || row.Total_Marks || "0")),
+      parent_phone: String(row.parent_phone || row.ParentPhone || row.phone || row.Phone || ""),
       parent_email: String(row.parent_email || row.ParentEmail || ""),
       assignments_completed: parseFloat(String(row.assignments_completed || row.AssignmentsCompleted || "0")),
     }));
@@ -127,29 +130,42 @@ export default function DataUpload() {
   };
 
   const runPrediction = () => {
+    const hasMarksData = parsedData.some((s) => s.marks > 0);
     const results: PredictionResult[] = parsedData.map((student) => {
       let cgpaPoints = 0;
       let attPoints = 0;
+      let marksPoints = 0;
+      let cgpaLevel = "safe";
+      let attLevel = "safe";
+      let marksLevel = "safe";
       const factors: Record<string, string> = {};
 
-      if (student.gpa <= 5) { cgpaPoints = 60; factors.cgpa = "CGPA ≤ 5.0 — High Risk"; }
-      else if (student.gpa <= 6) { cgpaPoints = 40; factors.cgpa = "CGPA ≤ 6.0 — Medium Risk"; }
-      else if (student.gpa < 7) { cgpaPoints = 20; factors.cgpa = "CGPA < 7.0 — Low Risk"; }
-      else factors.cgpa = "CGPA ≥ 7.0 — Safe";
+      if (student.gpa >= 8) { cgpaPoints = 0; cgpaLevel = "safe"; factors.cgpa = "CGPA ≥ 8.0 — Safe"; }
+      else if (student.gpa >= 7) { cgpaPoints = 20; cgpaLevel = "low"; factors.cgpa = "CGPA ≥ 7.0 — Low Risk"; }
+      else if (student.gpa >= 6.5) { cgpaPoints = 40; cgpaLevel = "medium"; factors.cgpa = "CGPA ≥ 6.5 — Medium Risk"; }
+      else if (student.gpa >= 5) { cgpaPoints = 60; cgpaLevel = "high"; factors.cgpa = "CGPA ≥ 5.0 — High Risk"; }
+      else { cgpaPoints = 80; cgpaLevel = "Very High"; factors.cgpa = "CGPA < 5.0 — Very High Risk"; }
 
-      if (student.attendance >= 85) { attPoints = 0; factors.attendance = "Attendance ≥ 85% — Safe"; }
-      else if (student.attendance >= 80) { attPoints = 20; factors.attendance = "Attendance < 85% — Low Risk"; }
-      else if (student.attendance >= 75) { attPoints = 40; factors.attendance = "Attendance < 80% — Medium Risk"; }
-      else { attPoints = 80; factors.attendance = "Attendance < 75% — Cannot write exam"; }
+      if (student.attendance >= 85) { attPoints = 0; attLevel = "safe"; factors.attendance = "Attendance ≥ 85% — Safe"; }
+      else if (student.attendance >= 80) { attPoints = 20; attLevel = "low"; factors.attendance = "Attendance < 85% — Low Risk"; }
+      else if (student.attendance >= 75) { attPoints = 40; attLevel = "medium"; factors.attendance = "Attendance < 80% — Medium Risk"; }
+      else if (student.attendance >= 65) { attPoints = 60; attLevel = "high"; factors.attendance = "Attendance < 75% — Cannot write exam"; }
+      else { attPoints = 80; attLevel = "Very High"; factors.attendance = "Attendance < 65% — Very High Risk (cannot write exam)"; }
 
-      const totalScore = Math.min(cgpaPoints + attPoints, 100);
-      let riskLevel: string;
+      if (!hasMarksData) { marksPoints = 0; marksLevel = "safe"; factors.marks = "Marks: no data"; }
+      else if (student.marks >= 75) { marksPoints = 0; marksLevel = "safe"; factors.marks = "Marks ≥ 75 — Safe"; }
+      else if (student.marks >= 60) { marksPoints = 20; marksLevel = "low"; factors.marks = "Marks < 75 — Low Risk"; }
+      else if (student.marks >= 45) { marksPoints = 40; marksLevel = "medium"; factors.marks = "Marks < 60 — Medium Risk"; }
+      else if (student.marks >= 35) { marksPoints = 60; marksLevel = "high"; factors.marks = "Marks < 45 — High Risk"; }
+      else { marksPoints = 80; marksLevel = "Very High"; factors.marks = "Marks < 35 — Very High Risk"; }
 
-      if (student.attendance < 75) riskLevel = "Very High";
-      else if (totalScore >= 80) riskLevel = "high";
-      else if (totalScore >= 40) riskLevel = "medium";
-      else if (totalScore >= 20) riskLevel = "low";
-      else riskLevel = "safe";
+      const totalScore = Math.min(cgpaPoints + attPoints + marksPoints, 100);
+
+      const rank: Record<string, number> = { safe: 0, low: 1, medium: 2, high: 3, "Very High": 4 };
+      const levels = [cgpaLevel, attLevel, marksLevel].filter((l) => l !== "safe" || cgpaLevel === "safe" && attLevel === "safe" && marksLevel === "safe");
+      const worstLevel = levels.reduce((worst, l) => (rank[l] > rank[worst] ? l : worst), "safe");
+
+      let riskLevel = worstLevel;
 
       return {
         name: student.name,
@@ -158,12 +174,28 @@ export default function DataUpload() {
         factors,
         gpa: student.gpa,
         attendance: student.attendance,
+        marks: student.marks,
       };
     });
 
+    // Generate parent alerts for Very High risk students
+    const veryHighStudents = results.filter((p) => p.risk_level === "Very High");
+    if (veryHighStudents.length > 0) {
+      const existingAlerts = JSON.parse(localStorage.getItem("parentAlerts") || "[]");
+      const newAlerts = veryHighStudents.map((s) => ({
+        id: "alert_" + Date.now() + "_" + s.name.replace(/\s/g, "_"),
+        studentName: s.name,
+        riskScore: s.risk_score,
+        reason: Object.values(s.factors).join("; "),
+        timestamp: new Date().toISOString(),
+        read: false,
+      }));
+      localStorage.setItem("parentAlerts", JSON.stringify([...newAlerts, ...existingAlerts]));
+    }
+
     setPredictions(results);
     setStep("results");
-    toast({ title: "Analysis Complete", description: `Analyzed ${results.length} students.` });
+    toast({ title: "Analysis Complete", description: `Analyzed ${results.length} students.${veryHighStudents.length > 0 ? ` ${veryHighStudents.length} Very High risk alerts sent to parents.` : ""}` });
   };
 
   const riskDistribution = useMemo(() => {
@@ -387,12 +419,13 @@ export default function DataUpload() {
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                    <table className="w-full text-sm">
                     <thead className="bg-muted/50">
                       <tr className="border-b">
                         <th className="text-left p-2">Student Name</th>
                         <th className="text-left p-2">GPA</th>
                         <th className="text-left p-2">Attendance</th>
+                        <th className="text-left p-2">Marks</th>
                         <th className="text-left p-2">Risk</th>
                         <th className="text-left p-2">Reason</th>
                       </tr>
@@ -403,6 +436,7 @@ export default function DataUpload() {
                           <td className="p-2 font-medium">{pred.name}</td>
                           <td className="p-2">{pred.gpa}</td>
                           <td className="p-2">{pred.attendance}%</td>
+                          <td className="p-2">{pred.marks}</td>
                           <td className="p-2">
                             <span className={`px-2 py-0.5 rounded text-xs font-medium ${riskBadge(pred.risk_level)}`}>
                               {pred.risk_level === "Very High" ? "VERY HIGH" : "HIGH"}
@@ -427,12 +461,13 @@ export default function DataUpload() {
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                    <table className="w-full text-sm">
                     <thead className="bg-muted/50">
                       <tr className="border-b">
                         <th className="text-left p-2">Student Name</th>
                         <th className="text-left p-2">GPA</th>
                         <th className="text-left p-2">Attendance</th>
+                        <th className="text-left p-2">Marks</th>
                         <th className="text-left p-2">Risk</th>
                       </tr>
                     </thead>
@@ -442,6 +477,7 @@ export default function DataUpload() {
                           <td className="p-2 font-medium">{pred.name}</td>
                           <td className="p-2">{pred.gpa}</td>
                           <td className="p-2">{pred.attendance}%</td>
+                          <td className="p-2">{pred.marks}</td>
                           <td className="p-2">
                             <span className={`px-2 py-0.5 rounded text-xs font-medium ${riskBadge(pred.risk_level)}`}>
                               MEDIUM
@@ -463,12 +499,13 @@ export default function DataUpload() {
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                    <table className="w-full text-sm">
                     <thead className="bg-muted/50">
                       <tr className="border-b">
                         <th className="text-left p-2">Student Name</th>
                         <th className="text-left p-2">GPA</th>
                         <th className="text-left p-2">Attendance</th>
+                        <th className="text-left p-2">Marks</th>
                         <th className="text-left p-2">Risk</th>
                       </tr>
                     </thead>
@@ -478,6 +515,7 @@ export default function DataUpload() {
                           <td className="p-2 font-medium">{pred.name}</td>
                           <td className="p-2">{pred.gpa}</td>
                           <td className="p-2">{pred.attendance}%</td>
+                          <td className="p-2">{pred.marks}</td>
                           <td className="p-2">
                             <span className={`px-2 py-0.5 rounded text-xs font-medium ${riskBadge(pred.risk_level)}`}>
                               {pred.risk_level === "safe" ? "SAFE" : "LOW"}
@@ -558,7 +596,7 @@ export default function DataUpload() {
             <Label htmlFor="file-upload">Student Data File (.xlsx, .csv)</Label>
             <Input id="file-upload" type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} className="mt-1" />
             <p className="text-sm text-muted-foreground mt-1">
-              Upload with columns: name, email, grade, gpa (CGPA), attendance
+              Upload with columns: name, email, grade, gpa (CGPA), attendance, marks
             </p>
           </div>
 

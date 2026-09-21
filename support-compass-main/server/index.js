@@ -7,10 +7,11 @@ import studentRoutes from "./routes/students.js";
 import sessionRoutes from "./routes/sessions.js";
 import timetableRoutes from "./routes/timetable.js";
 import alertRoutes from "./routes/alerts.js";
+import erpRoutes from "./routes/erp.js";
 
 const app = express();
 const PORT = process.env.PORT || 5001;
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://nnitheesh863_db_user:nnitheesh863_db_user@cluster0.8paqpqr.mongodb.net/eduguard?retryWrites=true&w=majority";
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://kavikasri46_db_user:ZbiAkbNFwAyIahbX@cluster0.ulib1zn.mongodb.net/eduguard?retryWrites=true&w=majority";
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
@@ -20,6 +21,7 @@ app.use("/api/students", studentRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/timetable", timetableRoutes);
 app.use("/api/alerts", alertRoutes);
+app.use("/api", erpRoutes); // ERP Integration — Fake ERP + Sync + Analytics
 
 app.get("/api/health", (req, res) => res.json({ status: "ok", version: "1.0.0" }));
 

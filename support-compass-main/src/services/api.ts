@@ -4,8 +4,22 @@ function getToken(): string | null {
   return localStorage.getItem("token");
 }
 
+async function ensureToken(): Promise<string> {
+  let token = getToken();
+  if (token) return token;
+  try {
+    const res = await fetch(`${API_BASE}/auth/demo-token`, { method: "POST", headers: { "Content-Type": "application/json" } });
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.setItem("token", data.token);
+      return data.token;
+    }
+  } catch {}
+  return "";
+}
+
 async function request(path: string, options: RequestInit = {}): Promise<any> {
-  const token = getToken();
+  const token = await ensureToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string> || {}),
@@ -52,4 +66,16 @@ export const api = {
     request("/alerts/bulk", { method: "POST", body: JSON.stringify({ alerts }) }),
   markAlertRead: (id: string) =>
     request(`/alerts/${id}`, { method: "PUT", body: JSON.stringify({ is_read: true }) }),
+
+  // Leaves
+  getLeaves: () => request("/leaves"),
+  createLeave: (data: any) => request("/leaves", { method: "POST", body: JSON.stringify(data) }),
+  updateLeave: (id: string, data: any) =>
+    request(`/leaves/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+
+  // Documents
+  getDocuments: () => request("/documents"),
+  uploadDocument: (data: any) => request("/documents", { method: "POST", body: JSON.stringify(data) }),
+  deleteDocument: (id: string) =>
+    request(`/documents/${id}`, { method: "DELETE" }),
 };

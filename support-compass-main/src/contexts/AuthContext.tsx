@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import { UserRole } from "@/lib/types";
-import { api } from "@/services/api";
 
 interface AuthUser {
   id: string;
@@ -9,16 +8,25 @@ interface AuthUser {
   role: UserRole;
 }
 
+interface RegisteredUser extends AuthUser {
+  password: string;
+}
+
 interface AuthContextType {
   user: AuthUser | null;
   login: (email: string, password: string) => Promise<string | null>;
   register: (name: string, email: string, password: string, role: UserRole) => Promise<string | null>;
   logout: () => void;
-  switchRole: (role: UserRole) => void;
   isAuthenticated: boolean;
+  switchRole: (role: UserRole) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+function getRegisteredUsers(): RegisteredUser[] {
+  try { return JSON.parse(localStorage.getItem("registeredUsers") || "[]"); }
+  catch { return []; }
+}
 
 const demoUsers: Record<string, AuthUser> = {
   admin: { id: "u1", name: "Admin User", email: "admin@school.edu", role: "admin" },
@@ -34,51 +42,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const login = async (email: string, password: string): Promise<string | null> => {
+    // Check registered users first
+    const registered = getRegisteredUsers();
+    const found = registered.find((u) => u.email === email && u.password === password);
+    if (found) {
+      const u: AuthUser = { id: found.id, name: found.name, email: found.email, role: found.role };
+      setUser(u);
+      localStorage.setItem("user", JSON.stringify(u));
+      return null;
+    }
+    // Check demo users (allow login without password for demos)
     const demo = Object.values(demoUsers).find((u) => u.email === email);
     if (demo) {
       setUser(demo);
       localStorage.setItem("user", JSON.stringify(demo));
       return null;
     }
-    try {
-      const data = await api.login(email, password);
-      const u: AuthUser = { id: data.user.id, name: data.user.name, email: data.user.email, role: data.user.role };
-      setUser(u);
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(u));
-      return null;
-    } catch (err: any) {
-      return err.message || "Login failed";
-    }
+    return "Invalid email or password.";
   };
 
   const register = async (name: string, email: string, password: string, role: UserRole): Promise<string | null> => {
-    try {
-      const data = await api.register(name, email, password, role);
-      const u: AuthUser = { id: data.user.id, name: data.user.name, email: data.user.email, role: data.user.role };
-      setUser(u);
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(u));
-      return null;
-    } catch (err: any) {
-      return err.message || "Registration failed";
+    const registered = getRegisteredUsers();
+    if (registered.find((u) => u.email === email)) {
+      return "An account with this email already exists.";
     }
+    const newUser: RegisteredUser = {
+      id: "u" + Date.now(),
+      name,
+      email,
+      role,
+      password,
+    };
+    registered.push(newUser);
+    localStorage.setItem("registeredUsers", JSON.stringify(registered));
+    return null;
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("token");
     localStorage.removeItem("user");
   };
 
   const switchRole = (role: UserRole) => {
-    const u = demoUsers[role];
-    setUser(u);
-    localStorage.setItem("user", JSON.stringify(u));
+    const demoUser = demoUsers[role];
+    if (demoUser) {
+      setUser(demoUser);
+      localStorage.setItem("user", JSON.stringify(demoUser));
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, switchRole, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user, switchRole }}>
       {children}
     </AuthContext.Provider>
   );

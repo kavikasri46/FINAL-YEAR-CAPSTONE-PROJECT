@@ -15,6 +15,15 @@ import Notifications from "./pages/Notifications";
 import DataUpload from "./pages/DataUpload";
 import ParentAlerts from "./pages/ParentAlerts";
 import NotFound from "./pages/NotFound";
+import ERPDashboard from "./pages/erp/ERPDashboard";
+import SyncERP from "./pages/erp/SyncERP";
+import AcademicRecords from "./pages/erp/AcademicRecords";
+import AttendancePage from "./pages/erp/AttendancePage";
+import InternalMarksPage from "./pages/erp/InternalMarksPage";
+import SemesterResults from "./pages/erp/SemesterResults";
+import AIAnalytics from "./pages/erp/AIAnalytics";
+import AcademicReports from "./pages/erp/AcademicReports";
+import ERPCharts from "./pages/erp/ERPCharts";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +45,16 @@ function AppRoutes() {
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
       <Route path="/upload" element={<ProtectedRoute><DataUpload /></ProtectedRoute>} />
       <Route path="/parent-alerts" element={<ProtectedRoute><ParentAlerts /></ProtectedRoute>} />
+      {/* ERP Integration Routes */}
+      <Route path="/erp" element={<ProtectedRoute><ERPDashboard /></ProtectedRoute>} />
+      <Route path="/erp/sync" element={<ProtectedRoute><SyncERP /></ProtectedRoute>} />
+      <Route path="/erp/academic-records" element={<ProtectedRoute><AcademicRecords /></ProtectedRoute>} />
+      <Route path="/erp/attendance" element={<ProtectedRoute><AttendancePage /></ProtectedRoute>} />
+      <Route path="/erp/internal-marks" element={<ProtectedRoute><InternalMarksPage /></ProtectedRoute>} />
+      <Route path="/erp/semester-results" element={<ProtectedRoute><SemesterResults /></ProtectedRoute>} />
+      <Route path="/erp/ai-analytics" element={<ProtectedRoute><AIAnalytics /></ProtectedRoute>} />
+      <Route path="/erp/reports" element={<ProtectedRoute><AcademicReports /></ProtectedRoute>} />
+      <Route path="/erp/charts" element={<ProtectedRoute><ERPCharts /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
