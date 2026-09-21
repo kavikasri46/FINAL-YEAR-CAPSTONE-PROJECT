@@ -52,8 +52,11 @@ const connectDB = async () => {
 
 connectDB();
 
-if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Only listen on port if running as standalone server directly (not inside Vercel serverless)
+if (!process.env.VERCEL && process.env.NODE_ENV !== "test") {
+  try {
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  } catch (e) {}
 }
 
 export default app;
