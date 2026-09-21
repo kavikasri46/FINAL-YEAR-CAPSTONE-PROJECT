@@ -205,9 +205,16 @@ export default function Landing() {
     }
   ];
 
+  const handleLaunchPortal = (defaultRole: "admin" | "student" | "mentor" | "parent" = "admin") => {
+    if (!user) {
+      loginAsDemo(defaultRole);
+    }
+    navigate("/dashboard");
+  };
+
   const handle1ClickLogin = (role: "admin" | "student" | "mentor" | "parent") => {
     loginAsDemo(role);
-    navigate("/");
+    navigate("/dashboard");
   };
 
   const handleContactSubmit = async (e: React.FormEvent) => {
@@ -303,12 +310,12 @@ export default function Landing() {
           {/* Action / Launch Portal */}
           <div className="flex items-center gap-3">
             {user ? (
-              <Link
-                to="/"
+              <button
+                onClick={() => navigate("/dashboard")}
                 className="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-300 flex items-center gap-2"
               >
                 <Zap className="h-3.5 w-3.5 fill-current" /> Open Dashboard
-              </Link>
+              </button>
             ) : (
               <>
                 <Link
@@ -317,12 +324,12 @@ export default function Landing() {
                 >
                   Faculty Sign In
                 </Link>
-                <Link
-                  to="/auth"
+                <button
+                  onClick={() => handleLaunchPortal("admin")}
                   className="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-gradient-to-r from-purple-600 via-pink-600 to-pink-500 hover:opacity-90 text-white shadow-lg shadow-pink-500/20 hover:shadow-pink-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border border-pink-400/30 flex items-center gap-1.5"
                 >
                   <GraduationCap className="h-3.5 w-3.5" /> Launch Portal
-                </Link>
+                </button>
               </>
             )}
           </div>
@@ -380,13 +387,13 @@ export default function Landing() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="flex flex-wrap items-center gap-4 pt-1"
             >
-              <Link
-                to="/auth"
+              <button
+                onClick={() => handleLaunchPortal("admin")}
                 className="px-8 py-3.5 rounded-full text-sm font-semibold tracking-wide uppercase bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-400 hover:to-indigo-500 text-white shadow-xl shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2 group"
               >
                 Launch EduGuard Portal
                 <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </Link>
+              </button>
 
               <a
                 href="#calculator"
@@ -647,12 +654,12 @@ export default function Landing() {
                 {riskTier.action}
               </div>
 
-              <Link
-                to="/auth"
+              <button
+                onClick={() => handleLaunchPortal("mentor")}
                 className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase tracking-wider text-white shadow-md hover:opacity-90 transition-opacity"
               >
                 View in Live Portal ➔
-              </Link>
+              </button>
             </div>
 
           </div>
@@ -677,13 +684,13 @@ export default function Landing() {
               </h2>
             </div>
             
-            <Link
-              to="/auth"
+            <button
+              onClick={() => handleLaunchPortal("admin")}
               className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-semibold text-purple-300 hover:text-pink-300 group transition-colors"
             >
               Access Faculty Modules
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </button>
           </div>
 
           {/* 3 Core System Cards Grid */}
@@ -1246,12 +1253,12 @@ export default function Landing() {
                   ))}
                 </div>
 
-                <Link
-                  to="/auth"
+                <button
+                  onClick={() => { setSelectedModule(null); handleLaunchPortal("admin"); }}
                   className="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-gradient-to-r from-pink-500 to-purple-600 text-white"
                 >
                   Open in Portal ➔
-                </Link>
+                </button>
               </div>
             </motion.div>
           </div>
