@@ -19,7 +19,12 @@ router.post("/register", async (req, res) => {
     const cleanPassword = password.trim();
     const cleanName = name.trim();
 
-    const exists = await User.findOne({ email: cleanEmail });
+    let exists = null;
+    try {
+      exists = await User.findOne({ email: cleanEmail });
+    } catch (dbErr) {
+      console.warn("MongoDB query notice during register:", dbErr.message);
+    }
     if (exists) return res.status(400).json({ error: "Email already registered" });
 
     const user = await User.create({ name: cleanName, email: cleanEmail, password: cleanPassword, role: role || "student" });
@@ -40,7 +45,13 @@ router.post("/login", async (req, res) => {
     const cleanPassword = password.trim();
 
     // Check MongoDB User
-    const user = await User.findOne({ email: cleanEmail });
+    let user = null;
+    try {
+      user = await User.findOne({ email: cleanEmail });
+    } catch (dbErr) {
+      console.warn("MongoDB query notice during login:", dbErr.message);
+    }
+
     if (user && user.password === cleanPassword) {
       const token = generateToken(user);
       return res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
