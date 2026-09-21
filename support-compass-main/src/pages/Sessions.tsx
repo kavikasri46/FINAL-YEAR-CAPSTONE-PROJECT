@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Users, Video, Plus, X, Play, FileText, Upload, Trash2, Download, ShieldCheck, CheckCircle2, Clock, Edit, Save } from "lucide-react";
+import { Calendar, Users, Video, Plus, X, Play, FileText, Upload, Trash2, Download, ShieldCheck, CheckCircle2, Clock, XCircle, Edit, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
