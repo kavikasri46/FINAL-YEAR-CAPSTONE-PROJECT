@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import Papa from 'papaparse';
 import { useToast } from "@/components/ui/use-toast";
 import { api } from "@/services/api";
+import { SessionManagerCard } from "@/components/SessionManagerCard";
 
 interface Student {
   id: string;
@@ -161,7 +162,7 @@ export default function MentorDashboard() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-display font-bold">Mentor Dashboard</h1>
-          <p className="text-muted-foreground text-sm">Manage your assigned students and sessions</p>
+          <p className="text-muted-foreground text-sm">Manage your assigned students, live sessions, and counseling</p>
         </div>
         <div className="flex gap-2">
           <button onClick={downloadTemplate} className="flex items-center gap-2 px-3 py-2 text-sm bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors">
@@ -182,6 +183,9 @@ export default function MentorDashboard() {
         <StatsCard title="Sessions This Week" value={stats.sessionsThisWeek.toString()} icon={Calendar} variant="success" />
         <StatsCard title="Avg Student GPA" value={stats.avgGpa.toString()} icon={TrendingUp} trend={{ value: 2, positive: false }} />
       </div>
+
+      {/* LIVE MENTOR SESSIONS HUB */}
+      <SessionManagerCard title="Faculty Mentorship & Class Sessions Dispatcher" />
 
       {pendingLeaves.length > 0 && (
         <Card className="border-yellow-500/50">

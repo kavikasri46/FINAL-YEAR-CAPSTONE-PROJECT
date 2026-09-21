@@ -208,6 +208,9 @@ export default function Sessions() {
     const updated = [newSessionItem, ...sessions];
     setSessions(updated);
     localStorage.setItem("app_sessions", JSON.stringify(updated));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("app_sessions_updated", { detail: updated }));
+    }
     setForm({
       title: "",
       description: "",
@@ -240,6 +243,9 @@ export default function Sessions() {
     const updatedList = sessions.map((s) => (s._id === id ? { ...s, ...editForm } : s));
     setSessions(updatedList);
     localStorage.setItem("app_sessions", JSON.stringify(updatedList));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("app_sessions_updated", { detail: updatedList }));
+    }
     setEditingId(null);
 
     try {
@@ -256,6 +262,9 @@ export default function Sessions() {
     const updatedList = sessions.map((s) => (s._id === id ? { ...s, status: newStatus } : s));
     setSessions(updatedList);
     localStorage.setItem("app_sessions", JSON.stringify(updatedList));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("app_sessions_updated", { detail: updatedList }));
+    }
 
     try {
       await api.updateSession(id, { status: newStatus });
@@ -268,6 +277,9 @@ export default function Sessions() {
     const updatedList = sessions.filter((s) => s._id !== id);
     setSessions(updatedList);
     localStorage.setItem("app_sessions", JSON.stringify(updatedList));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("app_sessions_updated", { detail: updatedList }));
+    }
     showNotify("Session removed.");
   };
 
