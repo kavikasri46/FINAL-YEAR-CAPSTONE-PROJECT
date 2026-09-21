@@ -24,8 +24,12 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function getRegisteredUsers(): RegisteredUser[] {
-  try { return JSON.parse(localStorage.getItem("registeredUsers") || "[]"); }
-  catch { return []; }
+  try {
+    const data = localStorage.getItem("registeredUsers");
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
 }
 
 const demoUsers: Record<string, AuthUser> = {
@@ -37,57 +41,68 @@ const demoUsers: Record<string, AuthUser> = {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(() => {
-    const stored = localStorage.getItem("user");
-    return stored ? JSON.parse(stored) : null;
+    try {
+      const stored = localStorage.getItem("user");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
   });
 
   const login = async (email: string, password: string): Promise<string | null> => {
     // Check registered users first
-    const registered = getRegisteredUsers();
-    const found = registered.find((u) => u.email === email && u.password === password);
-    if (found) {
-      const u: AuthUser = { id: found.id, name: found.name, email: found.email, role: found.role };
-      setUser(u);
-      localStorage.setItem("user", JSON.stringify(u));
-      return null;
-    }
+    try {
+      const registered = getRegisteredUsers();
+      const found = registered.find((u) => u.email === email && u.password === password);
+      if (found) {
+        const u: AuthUser = { id: found.id, name: found.name, email: found.email, role: found.role };
+        setUser(u);
+        try { localStorage.setItem("user", JSON.stringify(u)); } catch {}
+        return null;
+      }
+    } catch {}
+
     // Check demo users (allow login without password for demos)
     const demo = Object.values(demoUsers).find((u) => u.email === email);
     if (demo) {
       setUser(demo);
-      localStorage.setItem("user", JSON.stringify(demo));
+      try { localStorage.setItem("user", JSON.stringify(demo)); } catch {}
       return null;
     }
     return "Invalid email or password.";
   };
 
   const register = async (name: string, email: string, password: string, role: UserRole): Promise<string | null> => {
-    const registered = getRegisteredUsers();
-    if (registered.find((u) => u.email === email)) {
-      return "An account with this email already exists.";
+    try {
+      const registered = getRegisteredUsers();
+      if (registered.find((u) => u.email === email)) {
+        return "An account with this email already exists.";
+      }
+      const newUser: RegisteredUser = {
+        id: "u" + Date.now(),
+        name,
+        email,
+        role,
+        password,
+      };
+      registered.push(newUser);
+      try { localStorage.setItem("registeredUsers", JSON.stringify(registered)); } catch {}
+      return null;
+    } catch {
+      return "Unable to save user registration. Please try again.";
     }
-    const newUser: RegisteredUser = {
-      id: "u" + Date.now(),
-      name,
-      email,
-      role,
-      password,
-    };
-    registered.push(newUser);
-    localStorage.setItem("registeredUsers", JSON.stringify(registered));
-    return null;
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    try { localStorage.removeItem("user"); } catch {}
   };
 
   const switchRole = (role: UserRole) => {
     const demoUser = demoUsers[role];
     if (demoUser) {
       setUser(demoUser);
-      localStorage.setItem("user", JSON.stringify(demoUser));
+      try { localStorage.setItem("user", JSON.stringify(demoUser)); } catch {}
     }
   };
 
@@ -99,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  return context;
 }
