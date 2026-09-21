@@ -16,6 +16,10 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://kavikasri46_db_user:Zb
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
+// Disable operation buffering so queries never hang for 10s if connection is pending/disconnected
+mongoose.set("bufferCommands", false);
+mongoose.set("bufferTimeoutMS", 2500);
+
 // MongoDB connection caching for Serverless & standalone
 let cachedPromise = null;
 const connectDB = async () => {
@@ -24,7 +28,8 @@ const connectDB = async () => {
   }
   if (!cachedPromise) {
     cachedPromise = mongoose.connect(MONGO_URI, {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 3000,
+      connectTimeoutMS: 3000,
     }).catch((err) => {
       cachedPromise = null;
       console.warn("MongoDB connection notice:", err.message);
@@ -37,7 +42,7 @@ const connectDB = async () => {
   }
 };
 
-// Ensure MongoDB is connected before handling any API routes
+// Ensure MongoDB connection is attempted before handling API routes
 app.use(async (req, res, next) => {
   try {
     await connectDB();
