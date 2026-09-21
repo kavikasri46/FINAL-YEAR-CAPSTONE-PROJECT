@@ -8,6 +8,7 @@ import sessionRoutes from "./routes/sessions.js";
 import timetableRoutes from "./routes/timetable.js";
 import alertRoutes from "./routes/alerts.js";
 import erpRoutes from "./routes/erp.js";
+import contactRoutes from "./routes/contact.js";
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -58,6 +59,8 @@ app.use("/api/students", studentRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/timetable", timetableRoutes);
 app.use("/api/alerts", alertRoutes);
+app.use("/api/contact", contactRoutes);
+app.use("/api/landing", contactRoutes);
 app.use("/api", erpRoutes); // ERP Integration — Fake ERP + Sync + Analytics
 
 app.get("/api/health", (req, res) => res.json({ 

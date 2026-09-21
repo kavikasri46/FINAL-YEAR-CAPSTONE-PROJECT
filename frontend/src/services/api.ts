@@ -80,4 +80,11 @@ export const api = {
   uploadDocument: (data: any) => request("/documents", { method: "POST", body: JSON.stringify(data) }),
   deleteDocument: (id: string) =>
     request(`/documents/${id}`, { method: "DELETE" }),
+
+  // Landing & Inquiries
+  getLandingData: () => request("/landing/data"),
+  submitContact: (data: { name: string; email: string; message: string; service?: string }) =>
+    request("/contact", { method: "POST", body: JSON.stringify(data) }),
+  subscribeNewsletter: (email: string) =>
+    request("/contact/newsletter", { method: "POST", body: JSON.stringify({ email }) }),
 };
