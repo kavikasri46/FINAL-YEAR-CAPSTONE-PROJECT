@@ -51,7 +51,7 @@ interface ModuleItem {
 
 export default function Landing() {
   const navigate = useNavigate();
-  const { user, loginAsDemo } = useAuth();
+  const { user } = useAuth();
 
   // Contact form state
   const [name, setName] = useState("");
@@ -205,18 +205,6 @@ export default function Landing() {
     }
   ];
 
-  const handleLaunchPortal = (defaultRole: "admin" | "student" | "mentor" | "parent" = "admin") => {
-    if (!user) {
-      loginAsDemo(defaultRole);
-    }
-    navigate("/dashboard");
-  };
-
-  const handle1ClickLogin = (role: "admin" | "student" | "mentor" | "parent") => {
-    loginAsDemo(role);
-    navigate("/dashboard");
-  };
-
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormStatus(null);
@@ -310,12 +298,12 @@ export default function Landing() {
           {/* Action / Launch Portal */}
           <div className="flex items-center gap-3">
             {user ? (
-              <button
-                onClick={() => navigate("/dashboard")}
+              <Link
+                to="/dashboard"
                 className="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-300 flex items-center gap-2"
               >
                 <Zap className="h-3.5 w-3.5 fill-current" /> Open Dashboard
-              </button>
+              </Link>
             ) : (
               <>
                 <Link
@@ -324,12 +312,12 @@ export default function Landing() {
                 >
                   Faculty Sign In
                 </Link>
-                <button
-                  onClick={() => handleLaunchPortal("admin")}
+                <Link
+                  to="/auth"
                   className="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-gradient-to-r from-purple-600 via-pink-600 to-pink-500 hover:opacity-90 text-white shadow-lg shadow-pink-500/20 hover:shadow-pink-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border border-pink-400/30 flex items-center gap-1.5"
                 >
                   <GraduationCap className="h-3.5 w-3.5" /> Launch Portal
-                </button>
+                </Link>
               </>
             )}
           </div>
@@ -387,13 +375,13 @@ export default function Landing() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="flex flex-wrap items-center gap-4 pt-1"
             >
-              <button
-                onClick={() => handleLaunchPortal("admin")}
+              <Link
+                to="/auth"
                 className="px-8 py-3.5 rounded-full text-sm font-semibold tracking-wide uppercase bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-400 hover:to-indigo-500 text-white shadow-xl shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2 group"
               >
                 Launch EduGuard Portal
                 <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </button>
+              </Link>
 
               <a
                 href="#calculator"
@@ -403,46 +391,8 @@ export default function Landing() {
               </a>
             </motion.div>
 
-            {/* 1-Click Demo Portals Box */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="p-4 rounded-2xl bg-[#130d24]/90 border border-purple-500/25 backdrop-blur-md space-y-2.5"
-            >
-              <p className="text-[11px] font-bold uppercase tracking-wider text-purple-300 flex items-center gap-2">
-                <Zap className="h-3.5 w-3.5 text-pink-400" /> Instant 1-Click Demo Portals:
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <button
-                  onClick={() => handle1ClickLogin("admin")}
-                  className="px-3 py-2 rounded-xl bg-purple-900/30 hover:bg-purple-800/50 border border-purple-500/30 text-xs text-purple-200 font-semibold transition-all hover:scale-102 flex items-center justify-center gap-1.5"
-                >
-                  <Shield className="h-3 w-3 text-purple-400" /> Admin
-                </button>
-                <button
-                  onClick={() => handle1ClickLogin("mentor")}
-                  className="px-3 py-2 rounded-xl bg-purple-900/30 hover:bg-purple-800/50 border border-purple-500/30 text-xs text-purple-200 font-semibold transition-all hover:scale-102 flex items-center justify-center gap-1.5"
-                >
-                  <Users className="h-3 w-3 text-pink-400" /> Mentor
-                </button>
-                <button
-                  onClick={() => handle1ClickLogin("student")}
-                  className="px-3 py-2 rounded-xl bg-purple-900/30 hover:bg-purple-800/50 border border-purple-500/30 text-xs text-purple-200 font-semibold transition-all hover:scale-102 flex items-center justify-center gap-1.5"
-                >
-                  <GraduationCap className="h-3 w-3 text-indigo-400" /> Student
-                </button>
-                <button
-                  onClick={() => handle1ClickLogin("parent")}
-                  className="px-3 py-2 rounded-xl bg-purple-900/30 hover:bg-purple-800/50 border border-purple-500/30 text-xs text-purple-200 font-semibold transition-all hover:scale-102 flex items-center justify-center gap-1.5"
-                >
-                  <Heart className="h-3 w-3 text-rose-400" /> Parent
-                </button>
-              </div>
-            </motion.div>
-
             {/* Monitoring Status Badge */}
-            <div className="flex items-center gap-3 pt-1 text-xs text-slate-400">
+            <div className="flex items-center gap-3 pt-2 text-xs text-slate-400">
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-pink-500"></span>
@@ -654,12 +604,12 @@ export default function Landing() {
                 {riskTier.action}
               </div>
 
-              <button
-                onClick={() => handleLaunchPortal("mentor")}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase tracking-wider text-white shadow-md hover:opacity-90 transition-opacity"
+              <Link
+                to="/auth"
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase tracking-wider text-white shadow-md hover:opacity-90 transition-opacity flex items-center justify-center"
               >
                 View in Live Portal ➔
-              </button>
+              </Link>
             </div>
 
           </div>
@@ -684,13 +634,13 @@ export default function Landing() {
               </h2>
             </div>
             
-            <button
-              onClick={() => handleLaunchPortal("admin")}
+            <Link
+              to="/auth"
               className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-semibold text-purple-300 hover:text-pink-300 group transition-colors"
             >
               Access Faculty Modules
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </button>
+            </Link>
           </div>
 
           {/* 3 Core System Cards Grid */}
@@ -1253,12 +1203,13 @@ export default function Landing() {
                   ))}
                 </div>
 
-                <button
-                  onClick={() => { setSelectedModule(null); handleLaunchPortal("admin"); }}
-                  className="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-gradient-to-r from-pink-500 to-purple-600 text-white"
+                <Link
+                  to="/auth"
+                  onClick={() => setSelectedModule(null)}
+                  className="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-gradient-to-r from-pink-500 to-purple-600 text-white flex items-center justify-center"
                 >
                   Open in Portal ➔
-                </button>
+                </Link>
               </div>
             </motion.div>
           </div>
