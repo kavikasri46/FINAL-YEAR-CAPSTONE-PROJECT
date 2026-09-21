@@ -12,24 +12,30 @@ import {
   Send,
   CheckCircle2,
   AlertCircle,
-  ExternalLink,
-  ChevronRight,
-  Globe,
-  Mail,
-  MapPin,
+  Clock,
+  TrendingUp,
+  Users,
+  ShieldAlert,
   Shield,
   Zap,
-  Code,
-  Palette,
-  Eye,
-  Sliders
+  GraduationCap,
+  Sliders,
+  ChevronRight,
+  Mail,
+  MapPin,
+  Phone,
+  BarChart3,
+  Calendar,
+  Bell,
+  BookOpen
 } from "lucide-react";
 import { api } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
+import kprLogo from "@/images/kpr logo.jpg";
 import heroPortrait from "@/images/hero_portrait.jpg";
 import portalArch from "@/images/portal_arch.jpg";
 
-interface Project {
+interface ModuleItem {
   id: string;
   number: string;
   title: string;
@@ -45,151 +51,170 @@ interface Project {
 
 export default function Landing() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, login } = useAuth();
 
   // Contact form state
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [department, setDepartment] = useState("Computer Science & Engineering");
+  const [service, setService] = useState("Dropout Early Warning Inquiry");
   const [message, setMessage] = useState("");
-  const [service, setService] = useState("UI/UX & AI Architecture");
   const [submitting, setSubmitting] = useState(false);
   const [formStatus, setFormStatus] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // Newsletter state
-  const [newsletterEmail, setNewsletterEmail] = useState("");
-  const [newsletterMsg, setNewsletterMsg] = useState("");
+  // Live Interactive Risk Calculator Widget state
+  const [calcAttendance, setCalcAttendance] = useState(68);
+  const [calcMarks, setCalcMarks] = useState(45);
+  const [calcArrears, setCalcArrears] = useState(1);
 
-  // Selected project modal
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [activeTab, setActiveTab] = useState<"all" | "fintech" | "wellness" | "ai">("all");
+  // Calculate dynamic simulated risk score
+  const computedRisk = Math.min(
+    100,
+    Math.max(
+      5,
+      Math.round(
+        (100 - calcAttendance) * 0.55 +
+        (100 - calcMarks) * 0.35 +
+        calcArrears * 10
+      )
+    )
+  );
+
+  const riskTier =
+    computedRisk >= 70
+      ? { label: "High Risk (Critical)", color: "text-red-400", bg: "bg-red-950/60 border-red-500/40", action: "Immediate Mentor & Parent SMS Required" }
+      : computedRisk >= 40
+      ? { label: "Medium Risk (Moderate)", color: "text-amber-400", bg: "bg-amber-950/60 border-amber-500/40", action: "Scheduled Counseling & Revision Support" }
+      : { label: "Low Risk (Safe)", color: "text-emerald-400", bg: "bg-emerald-950/60 border-emerald-500/40", action: "Optimal Performance & Regular Tracking" };
+
+  // Selected module modal
+  const [selectedModule, setSelectedModule] = useState<ModuleItem | null>(null);
   const [activeProcessStep, setActiveProcessStep] = useState(0);
 
   // Dynamic portfolio data
-  const [portfolioData, setPortfolioData] = useState<any>(null);
+  const [landingData, setLandingData] = useState<any>(null);
 
   useEffect(() => {
-    // Load dynamic data from backend API
     api.getLandingData()
-      .then((data) => setPortfolioData(data))
-      .catch(() => {
-        // Fallback data if backend is offline
-        setPortfolioData(null);
-      });
+      .then((data) => setLandingData(data))
+      .catch(() => setLandingData(null));
   }, []);
 
-  const projects: Project[] = portfolioData?.projects || [
+  const modules: ModuleItem[] = landingData?.modules || [
     {
-      id: "nexora",
+      id: "risk-engine",
       number: "01",
-      title: "NEXORA",
-      subtitle: "Fintech Dashboard & Risk Analytics Redesign",
-      category: "Fintech",
-      tags: ["UX Research", "UI Design", "Prototyping"],
-      description: "High-density transactional risk analytics and predictive student financial aid disbursement interface with sub-millisecond data visualization.",
-      impact: "42% increase in advisor task completion speed and 98.4% user satisfaction rate.",
-      stats: { accuracy: "99.1%", latency: "< 45ms", users: "18.5k" },
+      title: "ML RISK ENGINE",
+      subtitle: "Predictive Dropout Probability Algorithm",
+      category: "Machine Learning",
+      tags: ["KNN Classifier", "Attendance Matrix", "Grade Trajectory"],
+      description: "Proprietary multi-tier predictive model that evaluates attendance drop velocity, internal test fluctuations, and assignment submissions to compute a real-time Risk Index (0-100%).",
+      impact: "Identified 94% of at-risk students at least 3 weeks before mid-semester examinations.",
+      stats: { accuracy: "94.8%", latency: "< 35ms", monitored: "2,400+" },
       color: "from-purple-500/20 to-pink-500/10",
       featured: true,
     },
     {
-      id: "mindful",
+      id: "erp-sync",
       number: "02",
-      title: "MINDFUL",
-      subtitle: "Mental Wellness & Early Warning App",
-      category: "Wellness & EdTech",
-      tags: ["UX Research", "UI Design", "Interaction"],
-      description: "AI-guided mental health companion featuring adaptive sentiment assessment, burnout detection, and instant mentor escalation pathways.",
-      impact: "Adopted across 4 universities, reducing critical stress interventions by 65%.",
-      stats: { rating: "4.9/5", dailyActive: "8.2k", retention: "84%" },
+      title: "ERP SYNC ENGINE",
+      subtitle: "Unified Academic & Attendance Importer",
+      category: "System Integration",
+      tags: ["Auto Ingestion", "KPR ERP API", "Bi-directional"],
+      description: "Direct integration pipeline syncing daily attendance percentages, CIA 1/2 marks, semester SGPA/CGPA, and arrears history directly into centralized faculty dashboards.",
+      impact: "Eliminated manual record checking across 12 academic departments.",
+      stats: { syncRate: "100%", departments: "12", timeSaved: "18 hrs/wk" },
       color: "from-pink-500/20 to-purple-500/10",
       featured: true,
     },
     {
-      id: "roamia",
+      id: "parent-alert",
       number: "03",
-      title: "ROAMIA",
-      subtitle: "Travel & Smart Campus Navigation Platform",
-      category: "Campus AI",
-      tags: ["UX Research", "UI Design", "Prototyping"],
-      description: "Intelligent timetable scheduling and conflict-free room allocation engine with real-time push alerts and live student attendance tracking.",
-      impact: "Zero scheduling conflicts recorded across 120+ faculty members and 2,400 students.",
-      stats: { accuracy: "100%", schedules: "1,200+", timeSaved: "14 hrs/wk" },
+      title: "PARENT ALERT AI",
+      subtitle: "Automated Early Warning Notification Hub",
+      category: "Early Intervention",
+      tags: ["SMS Broadcast", "WhatsApp Bot", "Counseling Escalation"],
+      description: "Instant dispatch system that notifies parents when attendance falls below the mandatory 75% threshold or when sudden score regressions are detected.",
+      impact: "Increased parent-mentor counseling attendance by 78% across high-risk student cohorts.",
+      stats: { delivered: "99.4%", responseRate: "82%", alerts: "1,850+" },
       color: "from-violet-500/20 to-fuchsia-500/10",
       featured: true,
     }
   ];
 
-  const services = portfolioData?.services || [
+  const capabilities = [
     {
-      id: "user-research",
-      title: "User Research",
-      description: "Uncover insights that drive meaningful products with behavioral interviews & data modeling.",
-      icon: Search,
-      tags: ["Persona Mapping", "Data Synthesis", "Usability Testing"]
+      id: "attendance-tracking",
+      title: "Attendance Anomaly Detection",
+      description: "Instantly flags sudden absentee streaks and warns mentors before students fall below university eligibility limits.",
+      icon: Clock,
+      tags: ["75% Threshold Radar", "Absence Streaks", "ERP Sync"]
     },
     {
-      id: "interaction-design",
-      title: "Interaction Design",
-      description: "Design intuitive flows and micro-interactions that users naturally fall in love with.",
-      icon: Sparkles,
-      tags: ["Design Systems", "Prototyping", "Motion Physics"]
+      id: "marks-analytics",
+      title: "Internal Assessment Forecasting",
+      description: "Analyzes continuous assessment trends to forecast final semester pass probabilities and subject-level stress.",
+      icon: TrendingUp,
+      tags: ["CIA Score Alarms", "Subject Vulnerability", "Grade Curves"]
     },
     {
-      id: "ui-visual-design",
-      title: "UI Visual Design",
-      description: "Create beautiful, consistent, and on-brand interfaces with futuristic glassmorphism.",
-      icon: Layers,
-      tags: ["Dark Luxe UI", "Neon Cybernetics", "Design Tokens"]
+      id: "mentorship-hub",
+      title: "1-on-1 Mentorship Counseling",
+      description: "Empowers faculty mentors with comprehensive student dossiers, scheduled counseling logs, and curated revision video masterclasses.",
+      icon: Users,
+      tags: ["Assigned Cohorts", "Counseling Logs", "Study Videos"]
     },
     {
-      id: "prototyping",
-      title: "Prototyping",
-      description: "Bring ideas to life with high-fidelity functional models and validate before development.",
-      icon: Cpu,
-      tags: ["React & TypeScript", "REST APIs", "AI Integrations"]
+      id: "parent-engagement",
+      title: "Multichannel Parent Bridge",
+      description: "Keeps parents informed with transparent, automated alerts regarding student attendance, test results, and fee notices.",
+      icon: ShieldAlert,
+      tags: ["Instant SMS Alerts", "Call Logs", "Multilingual Support"]
     }
   ];
 
-  const tools = [
-    { name: "Figma", category: "Design", color: "#F24E1E", icon: "🎨" },
-    { name: "Sketch", category: "Vector", color: "#F7B500", icon: "💎" },
-    { name: "Adobe XD", category: "Prototypes", color: "#FF61F6", icon: "⚡" },
-    { name: "Photoshop", category: "Creative", color: "#31A8FF", icon: "✨" },
-    { name: "Illustrator", category: "Graphics", color: "#FF9A00", icon: "📐" },
-    { name: "ProtoPie", category: "Motion", color: "#EA2E7B", icon: "📱" },
+  const processSteps = landingData?.process || [
+    { step: "01", name: "DATA INGESTION", desc: "Automated sync of attendance logs, CIA marks, and student profiles from KPRCAS ERP." },
+    { step: "02", name: "AI RISK MODELING", desc: "KNN & weighted risk algorithms compute composite vulnerability scores for every student." },
+    { step: "03", name: "RISK TIERING", desc: "Categorizes students into High Risk (🔴), Medium Risk (🟡), and Low Risk (🟢) cohorts." },
+    { step: "04", name: "EARLY INTERVENTION", desc: "Triggers automated parent SMS alerts and assigns dedicated mentor counseling sessions." },
+    { step: "05", name: "RECOVERY & RETENTION", desc: "Tracks weekly recovery metrics, remedial session attendance, and academic turnaround." }
   ];
 
-  const processSteps = portfolioData?.process || [
-    { step: "01", name: "EMPATHIZE", desc: "Understand users, their needs, and their deep pain points through empathy interviews." },
-    { step: "02", name: "DEFINE", desc: "Synthesize insights and frame the core problem to achieve targeted impact." },
-    { step: "03", name: "IDEATE", desc: "Brainstorm multi-dimensional solutions and explore bold creative directions." },
-    { step: "04", name: "DESIGN", desc: "Craft intuitive interfaces, micro-animations, and delightful experiences." },
-    { step: "05", name: "TEST & REFINE", desc: "Validate, iterate, and refine with real-world user metrics and feedback." }
-  ];
-
-  const testimonials = portfolioData?.testimonials || [
+  const testimonials = landingData?.testimonials || [
     {
       id: "t1",
-      quote: "Liva transformed our complex product into a seamless experience. Her user insights and design vision are unmatched.",
-      name: "Nathan Park",
-      role: "Product Manager, Nexora",
+      quote: "EduGuard detected 42 students at risk in our department 3 weeks before finals. With targeted mentoring, every single student cleared the semester!",
+      name: "Dr. Rajesh Verma",
+      role: "Head of Mentorship, KPRCAS",
       avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
     },
     {
       id: "t2",
-      quote: "Working with Liva was an absolute pleasure. She's insightful, proactive, and truly cares about the user.",
-      name: "Sofia Martinez",
-      role: "Founder, Mindful",
-      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80"
+      quote: "The personalized counseling and video revision sessions helped me identify weak spots in Calculus and bring my attendance back above 88%.",
+      name: "Arjun Patel",
+      role: "Final Year Student, KPRCAS",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80"
     },
     {
       id: "t3",
-      quote: "Her designs not only look beautiful but also drive results. Our engagement increased by 40% after the redesign.",
-      name: "James Wilson",
-      role: "CTO, Roamia",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80"
+      quote: "Receiving timely SMS updates about internal mark drops allowed us to support our child from home before any serious academic consequence occurred.",
+      name: "Mr. S. Patel",
+      role: "Parent, KPRCAS Cohort",
+      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80"
     }
   ];
+
+  const handle1ClickLogin = async (role: "admin" | "student" | "mentor" | "parent") => {
+    const demoEmails: Record<string, string> = {
+      admin: "admin@school.edu",
+      student: "arjun@school.edu",
+      mentor: "rajesh@school.edu",
+      parent: "parent@school.edu",
+    };
+    await login(demoEmails[role], "password");
+    navigate("/");
+  };
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -205,29 +230,16 @@ export default function Landing() {
         name: name.trim(),
         email: email.trim(),
         message: message.trim(),
-        service,
+        service: `${department} - ${service}`,
       });
-      setFormStatus({ type: "success", text: res.message || "Thank you! Your message has been received." });
+      setFormStatus({ type: "success", text: res.message || "Thank you! Your inquiry has been submitted." });
       setName("");
       setEmail("");
       setMessage("");
     } catch (err: any) {
-      setFormStatus({ type: "error", text: err.message || "Failed to send message. Please try again." });
+      setFormStatus({ type: "error", text: err.message || "Failed to submit inquiry. Please try again." });
     }
     setSubmitting(false);
-  };
-
-  const handleNewsletter = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newsletterEmail.trim() || !newsletterEmail.includes("@")) return;
-    try {
-      const res = await api.subscribeNewsletter(newsletterEmail.trim());
-      setNewsletterMsg(res.message || "Subscribed successfully!");
-      setNewsletterEmail("");
-    } catch {
-      setNewsletterMsg("Subscribed! We'll keep you updated.");
-      setNewsletterEmail("");
-    }
   };
 
   return (
@@ -236,7 +248,7 @@ export default function Landing() {
       {/* Dynamic Ambient Background Glows */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute -top-40 left-1/4 w-[650px] h-[650px] bg-purple-600/15 rounded-full blur-[160px] animate-pulse-glow" />
-        <div className="absolute top-[45%] -right-40 w-[550px] h-[550px] bg-pink-600/10 rounded-full blur-[150px]" />
+        <div className="absolute top-[40%] -right-40 w-[550px] h-[550px] bg-pink-600/10 rounded-full blur-[150px]" />
         <div className="absolute bottom-20 left-10 w-[600px] h-[600px] bg-indigo-700/10 rounded-full blur-[180px]" />
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px] opacity-40" />
       </div>
@@ -244,71 +256,79 @@ export default function Landing() {
       {/* ──────────────────────────────────────────────────────────────────────────
           1. NAVIGATION BAR
       ────────────────────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#080511]/75 border-b border-purple-500/10 transition-all duration-300">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#080511]/85 border-b border-purple-500/15 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           
-          {/* Logo */}
+          {/* KPRCAS Logo & Brand */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-purple-600 via-pink-500 to-indigo-500 p-[1.5px] shadow-lg shadow-purple-500/20 group-hover:scale-105 transition-transform duration-300">
-              <div className="w-full h-full bg-[#0d091a] rounded-[10px] flex items-center justify-center">
-                <div className="w-4 h-4 rounded-full border-2 border-pink-400/80 border-t-transparent animate-spin duration-[4000ms]" />
-              </div>
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/40 to-pink-500/40 rounded-xl blur-sm group-hover:opacity-100 opacity-70 transition-opacity" />
+              <img
+                src={kprLogo}
+                alt="KPRCAS Logo"
+                className="h-11 w-11 rounded-xl object-contain bg-white p-1 ring-2 ring-purple-400/50 relative shadow-md"
+              />
             </div>
             <div>
-              <span className="font-display font-bold text-xl tracking-wider text-white flex items-center gap-1">
-                L I V A
-              </span>
-              <p className="text-[9px] uppercase tracking-[0.25em] text-purple-300/60 font-medium -mt-0.5">
-                UX SPECIALIST & AI
+              <div className="flex items-center gap-2">
+                <span className="font-display font-extrabold text-xl tracking-wider text-white">
+                  KPRCAS
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-purple-500/20 border border-purple-400/30 text-[9px] uppercase tracking-wider text-purple-300 font-bold">
+                  EduGuard
+                </span>
+              </div>
+              <p className="text-[9px] uppercase tracking-[0.2em] text-pink-400/80 font-semibold -mt-0.5">
+                LEARN BEYOND • DROPOUT PREDICTION
               </p>
             </div>
           </Link>
 
           {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8 text-xs uppercase tracking-widest text-slate-300">
-            <a href="#home" className="hover:text-pink-400 transition-colors flex items-center gap-1.5 font-medium text-white">
-              <span className="h-1.5 w-1.5 rounded-full bg-pink-400 shadow-[0_0_8px_#f472b6]" /> Home
+          <nav className="hidden lg:flex items-center gap-7 text-xs uppercase tracking-widest text-slate-300">
+            <a href="#overview" className="hover:text-pink-400 transition-colors flex items-center gap-1.5 font-medium text-white">
+              <span className="h-1.5 w-1.5 rounded-full bg-pink-400 shadow-[0_0_8px_#f472b6]" /> Overview
             </a>
-            <a href="#work" className="hover:text-pink-400 transition-colors text-slate-400 hover:text-white">
-              Work
+            <a href="#calculator" className="hover:text-pink-400 transition-colors text-slate-400 hover:text-white">
+              Risk Predictor
             </a>
-            <a href="#about" className="hover:text-pink-400 transition-colors text-slate-400 hover:text-white">
-              About
+            <a href="#modules" className="hover:text-pink-400 transition-colors text-slate-400 hover:text-white">
+              AI Modules
             </a>
-            <a href="#services" className="hover:text-pink-400 transition-colors text-slate-400 hover:text-white">
-              Services
+            <a href="#capabilities" className="hover:text-pink-400 transition-colors text-slate-400 hover:text-white">
+              Features
             </a>
             <a href="#process" className="hover:text-pink-400 transition-colors text-slate-400 hover:text-white">
-              Process
+              Intervention
             </a>
             <a href="#testimonials" className="hover:text-pink-400 transition-colors text-slate-400 hover:text-white">
-              Kind Words
+              Testimonials
             </a>
           </nav>
 
-          {/* CTA / Launch Portal */}
+          {/* Action / Launch Portal */}
           <div className="flex items-center gap-3">
             {user ? (
               <Link
                 to="/"
-                className="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-300 flex items-center gap-2"
+                className="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-300 flex items-center gap-2"
               >
-                <Zap className="h-3.5 w-3.5 fill-current" /> Open App
+                <Zap className="h-3.5 w-3.5 fill-current" /> Open Dashboard
               </Link>
             ) : (
               <>
                 <Link
                   to="/auth"
-                  className="hidden sm:inline-flex px-4 py-2 rounded-full text-xs font-medium text-slate-300 hover:text-white hover:bg-white/5 border border-purple-500/20 transition-all duration-200"
+                  className="hidden sm:inline-flex px-4 py-2 rounded-full text-xs font-medium text-slate-300 hover:text-white hover:bg-white/5 border border-purple-500/25 transition-all duration-200"
                 >
-                  Sign In
+                  Faculty Sign In
                 </Link>
-                <a
-                  href="#contact"
-                  className="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-gradient-to-r from-purple-600 via-pink-600 to-pink-500 hover:opacity-90 text-white shadow-lg shadow-pink-500/20 hover:shadow-pink-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border border-pink-400/30"
+                <Link
+                  to="/auth"
+                  className="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-gradient-to-r from-purple-600 via-pink-600 to-pink-500 hover:opacity-90 text-white shadow-lg shadow-pink-500/20 hover:shadow-pink-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border border-pink-400/30 flex items-center gap-1.5"
                 >
-                  Let's Connect
-                </a>
+                  <GraduationCap className="h-3.5 w-3.5" /> Launch Portal
+                </Link>
               </>
             )}
           </div>
@@ -318,21 +338,21 @@ export default function Landing() {
       {/* ──────────────────────────────────────────────────────────────────────────
           2. HERO SECTION
       ────────────────────────────────────────────────────────────────────────── */}
-      <section id="home" className="relative pt-12 pb-24 md:pt-20 md:pb-32 z-10">
+      <section id="overview" className="relative pt-12 pb-20 md:pt-16 md:pb-28 z-10">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           
           {/* Hero Left Content */}
-          <div className="lg:col-span-6 space-y-8">
+          <div className="lg:col-span-6 space-y-7">
             
             {/* Top Pill Tag */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-950/60 border border-purple-500/30 text-purple-300 text-xs tracking-widest uppercase font-medium backdrop-blur-md shadow-sm"
+              className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-purple-950/60 border border-purple-500/30 text-purple-300 text-xs tracking-widest uppercase font-medium backdrop-blur-md shadow-sm"
             >
               <span className="w-2 h-2 rounded-full bg-pink-400 animate-ping" />
-              | UX SPECIALIST & AI ARCHITECT |
+              | KPRCAS AI-POWERED STUDENT SUCCESS PLATFORM |
             </motion.div>
 
             {/* Display Headline */}
@@ -342,10 +362,10 @@ export default function Landing() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-4xl sm:text-5xl md:text-6xl font-display font-extrabold leading-[1.12] tracking-tight text-white"
             >
-              I design experiences <br />
-              that feel like{" "}
+              Predicting dropout risk <br />
+              before it{" "}
               <span className="italic font-serif font-normal text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-300 drop-shadow-[0_0_35px_rgba(236,72,153,0.35)]">
-                the future.
+                shapes futures.
               </span>
             </motion.h1>
 
@@ -356,7 +376,7 @@ export default function Landing() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-base sm:text-lg text-slate-300/85 leading-relaxed max-w-xl font-light"
             >
-              I craft intuitive digital experiences that merge human insight with elegant design—turning ambitious ideas into resilient products people love and remember.
+              Empowering KPRCAS educators and mentors with real-time ML risk scoring, automated parent alert dispatches, and deep ERP academic integration to ensure zero student dropouts.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -364,50 +384,83 @@ export default function Landing() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-wrap items-center gap-4 pt-2"
+              className="flex flex-wrap items-center gap-4 pt-1"
             >
-              <a
-                href="#work"
+              <Link
+                to="/auth"
                 className="px-8 py-3.5 rounded-full text-sm font-semibold tracking-wide uppercase bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-400 hover:to-indigo-500 text-white shadow-xl shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2 group"
               >
-                View My Work
+                Launch EduGuard Portal
                 <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </a>
+              </Link>
 
               <a
-                href="#about"
+                href="#calculator"
                 className="px-7 py-3.5 rounded-full text-sm font-medium tracking-wide uppercase bg-[#140f26]/80 hover:bg-[#1c1536] text-slate-200 border border-purple-500/25 hover:border-purple-400/50 backdrop-blur-md transition-all duration-300 flex items-center gap-2 shadow-lg"
               >
-                About Me
+                <Sliders className="h-4 w-4 text-pink-400" /> Test Risk Predictor
               </a>
             </motion.div>
 
-            {/* Available for Projects Badge */}
+            {/* 1-Click Demo Portals Box */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="flex items-center gap-3 pt-4 text-xs text-slate-400"
+              className="p-4 rounded-2xl bg-[#130d24]/90 border border-purple-500/25 backdrop-blur-md space-y-2.5"
             >
+              <p className="text-[11px] font-bold uppercase tracking-wider text-purple-300 flex items-center gap-2">
+                <Zap className="h-3.5 w-3.5 text-pink-400" /> Instant 1-Click Demo Portals:
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <button
+                  onClick={() => handle1ClickLogin("admin")}
+                  className="px-3 py-2 rounded-xl bg-purple-900/30 hover:bg-purple-800/50 border border-purple-500/30 text-xs text-purple-200 font-semibold transition-all hover:scale-102 flex items-center justify-center gap-1.5"
+                >
+                  <Shield className="h-3 w-3 text-purple-400" /> Admin
+                </button>
+                <button
+                  onClick={() => handle1ClickLogin("mentor")}
+                  className="px-3 py-2 rounded-xl bg-purple-900/30 hover:bg-purple-800/50 border border-purple-500/30 text-xs text-purple-200 font-semibold transition-all hover:scale-102 flex items-center justify-center gap-1.5"
+                >
+                  <Users className="h-3 w-3 text-pink-400" /> Mentor
+                </button>
+                <button
+                  onClick={() => handle1ClickLogin("student")}
+                  className="px-3 py-2 rounded-xl bg-purple-900/30 hover:bg-purple-800/50 border border-purple-500/30 text-xs text-purple-200 font-semibold transition-all hover:scale-102 flex items-center justify-center gap-1.5"
+                >
+                  <GraduationCap className="h-3 w-3 text-indigo-400" /> Student
+                </button>
+                <button
+                  onClick={() => handle1ClickLogin("parent")}
+                  className="px-3 py-2 rounded-xl bg-purple-900/30 hover:bg-purple-800/50 border border-purple-500/30 text-xs text-purple-200 font-semibold transition-all hover:scale-102 flex items-center justify-center gap-1.5"
+                >
+                  <Heart className="h-3 w-3 text-rose-400" /> Parent
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Monitoring Status Badge */}
+            <div className="flex items-center gap-3 pt-1 text-xs text-slate-400">
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-pink-500"></span>
               </span>
               <div>
-                <span className="text-pink-300 font-semibold uppercase tracking-wider">AVAILABLE FOR PROJECTS</span>
-                <p className="text-slate-400 text-[11px]">Let's build something exceptional together</p>
+                <span className="text-pink-300 font-semibold uppercase tracking-wider">ACTIVE KPRCAS MONITORING</span>
+                <p className="text-slate-400 text-[11px]">2,400+ students protected across 12 departments</p>
               </div>
-            </motion.div>
+            </div>
           </div>
 
-          {/* Hero Right Visual Showcase (Matching Reference Exactly) */}
+          {/* Hero Right Visual Showcase (Matching Reference Layout) */}
           <div className="lg:col-span-6 relative flex items-center justify-center">
             
             {/* Luminous Center Ring Glow */}
             <div className="absolute w-[360px] sm:w-[460px] h-[360px] sm:h-[460px] rounded-full border border-pink-500/30 bg-gradient-to-tr from-purple-600/20 via-pink-500/10 to-transparent blur-sm pointer-events-none animate-pulse-glow" />
             <div className="absolute w-[300px] sm:w-[380px] h-[300px] sm:h-[380px] rounded-full border-2 border-pink-400/40 shadow-[0_0_60px_rgba(244,114,182,0.35)] pointer-events-none" />
 
-            {/* Main Portrait Mask Container */}
+            {/* Main Center Mask Container */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -416,7 +469,7 @@ export default function Landing() {
             >
               <img
                 src={heroPortrait}
-                alt="Liva - UX Specialist"
+                alt="EduGuard KPR Student Success"
                 className="w-full h-full object-cover object-center scale-105 group-hover:scale-110 transition-transform duration-700 ease-out"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#080511] via-transparent to-purple-900/10" />
@@ -427,14 +480,14 @@ export default function Landing() {
               initial={{ opacity: 0, x: 30, y: -20 }}
               animate={{ opacity: 1, x: 0, y: 0 }}
               transition={{ duration: 0.7, delay: 0.3 }}
-              className="absolute -top-4 right-0 sm:right-4 z-20 p-4 rounded-2xl bg-[#17102c]/85 border border-pink-500/30 backdrop-blur-xl shadow-2xl shadow-purple-950/80 max-w-[200px]"
+              className="absolute -top-4 right-0 sm:right-4 z-20 p-4 rounded-2xl bg-[#17102c]/85 border border-pink-500/30 backdrop-blur-xl shadow-2xl shadow-purple-950/80 max-w-[210px]"
             >
               <div className="flex items-center gap-2 mb-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-pink-300">DESIGNING</span>
-                <Heart className="h-3 w-3 text-pink-400 fill-pink-400/40" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-pink-300">PREVENTING</span>
+                <Shield className="h-3 w-3 text-pink-400 fill-pink-400/40" />
               </div>
               <p className="text-xs font-medium text-slate-200 leading-snug">
-                with purpose <br />and empathy.
+                with empathy & <br />early AI alerts.
               </p>
             </motion.div>
 
@@ -443,23 +496,23 @@ export default function Landing() {
               initial={{ opacity: 0, x: 30, y: 30 }}
               animate={{ opacity: 1, x: 0, y: 0 }}
               transition={{ duration: 0.7, delay: 0.4 }}
-              className="absolute -bottom-6 right-0 sm:right-6 z-20 p-4 rounded-2xl bg-[#17102c]/90 border border-purple-500/30 backdrop-blur-xl shadow-2xl shadow-purple-950/80 max-w-[210px]"
+              className="absolute -bottom-6 right-0 sm:right-6 z-20 p-4 rounded-2xl bg-[#17102c]/90 border border-purple-500/30 backdrop-blur-xl shadow-2xl shadow-purple-950/80 max-w-[220px]"
             >
               <span className="text-[10px] font-bold uppercase tracking-widest text-purple-300 block mb-2">
-                FOCUS AREAS
+                CORE PREDICTORS
               </span>
               <ul className="text-xs text-slate-300 space-y-1 font-light">
                 <li className="flex items-center gap-1.5">
-                  <span className="h-1 w-1 rounded-full bg-pink-400" /> User Research
+                  <span className="h-1 w-1 rounded-full bg-pink-400" /> Attendance Anomaly Radar
                 </li>
                 <li className="flex items-center gap-1.5">
-                  <span className="h-1 w-1 rounded-full bg-purple-400" /> Interaction Design
+                  <span className="h-1 w-1 rounded-full bg-purple-400" /> Internal Mark Drop Matrix
                 </li>
                 <li className="flex items-center gap-1.5">
-                  <span className="h-1 w-1 rounded-full bg-indigo-400" /> Visual Design
+                  <span className="h-1 w-1 rounded-full bg-indigo-400" /> Semester Risk Forecast
                 </li>
                 <li className="flex items-center gap-1.5">
-                  <span className="h-1 w-1 rounded-full bg-pink-300" /> Prototyping
+                  <span className="h-1 w-1 rounded-full bg-pink-300" /> Parent SMS Broadcast
                 </li>
               </ul>
             </motion.div>
@@ -472,14 +525,14 @@ export default function Landing() {
               className="absolute bottom-2 left-0 sm:left-4 z-20 p-3.5 px-4 rounded-2xl bg-[#17102c]/90 border border-purple-500/30 backdrop-blur-xl shadow-xl"
             >
               <span className="text-[10px] font-bold uppercase tracking-widest text-purple-300 block">
-                EXPERIENCE
+                ML PREDICTION ACCURACY
               </span>
               <div className="flex items-baseline gap-1.5 mt-0.5">
                 <span className="text-xl font-bold font-display text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-300">
-                  7+ YEARS
+                  94.8%
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 font-light mt-0.5">creating digital products</p>
+              <p className="text-[10px] text-slate-400 font-light mt-0.5">KNN & Random Forest Models</p>
             </motion.div>
           </div>
 
@@ -487,51 +540,176 @@ export default function Landing() {
       </section>
 
       {/* ──────────────────────────────────────────────────────────────────────────
-          3. FEATURED CASE STUDIES / WORK
+          3. LIVE INTERACTIVE ML RISK CALCULATOR DEMONSTRATION WIDGET
       ────────────────────────────────────────────────────────────────────────── */}
-      <section id="work" className="py-20 relative z-10 border-t border-purple-500/10">
+      <section id="calculator" className="py-20 relative z-10 border-t border-purple-500/10">
         <div className="max-w-7xl mx-auto px-6">
           
-          {/* Section Header */}
+          <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
+            <span className="text-xs uppercase tracking-widest text-pink-400 font-bold block">
+              LIVE INTERACTIVE AI DEMO
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight">
+              Test the Student <span className="italic font-serif text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-300">Risk Predictor.</span>
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 font-light">
+              Adjust the academic parameters below to see how EduGuard's machine learning model computes real-time dropout risk and triggers intervention paths.
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-[#140d28]/95 via-[#0f091f]/95 to-[#090514]/95 border border-purple-500/30 backdrop-blur-2xl shadow-2xl grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            
+            {/* Left Parameter Controls */}
+            <div className="md:col-span-7 space-y-6">
+              
+              {/* Attendance Slider */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-300 font-medium flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5 text-pink-400" /> Attendance Percentage
+                  </span>
+                  <span className={`font-mono font-bold ${calcAttendance < 75 ? "text-red-400" : "text-emerald-400"}`}>
+                    {calcAttendance}% {calcAttendance < 75 ? "(Below 75% Limit)" : "(Eligible)"}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="40"
+                  max="100"
+                  value={calcAttendance}
+                  onChange={(e) => setCalcAttendance(Number(e.target.value))}
+                  className="w-full h-2 bg-purple-950/80 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                />
+              </div>
+
+              {/* Internal Marks Slider */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-300 font-medium flex items-center gap-1.5">
+                    <TrendingUp className="h-3.5 w-3.5 text-purple-400" /> Internal Marks (CIA Average)
+                  </span>
+                  <span className={`font-mono font-bold ${calcMarks < 50 ? "text-amber-400" : "text-purple-300"}`}>
+                    {calcMarks} / 100
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="20"
+                  max="100"
+                  value={calcMarks}
+                  onChange={(e) => setCalcMarks(Number(e.target.value))}
+                  className="w-full h-2 bg-purple-950/80 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                />
+              </div>
+
+              {/* Arrears Counter */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-300 font-medium flex items-center gap-1.5">
+                    <BookOpen className="h-3.5 w-3.5 text-indigo-400" /> Active Arrears / Backlogs
+                  </span>
+                  <span className="font-mono font-bold text-pink-300">
+                    {calcArrears} {calcArrears === 1 ? "Subject" : "Subjects"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {[0, 1, 2, 3, 4].map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setCalcArrears(num)}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                        calcArrears === num
+                          ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md shadow-pink-500/20"
+                          : "bg-purple-950/40 text-slate-400 border border-purple-500/20 hover:text-white"
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Risk Meter Result */}
+            <div className="md:col-span-5 p-6 rounded-2xl bg-[#0b0616] border border-purple-500/25 flex flex-col items-center justify-center text-center space-y-4">
+              <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+                PREDICTED DROPOUT RISK INDEX
+              </span>
+
+              <div className="relative flex items-center justify-center">
+                <div className="text-5xl font-display font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-white">
+                  {computedRisk}%
+                </div>
+              </div>
+
+              <div className={`px-4 py-2 rounded-xl text-xs font-bold border ${riskTier.bg} ${riskTier.color}`}>
+                {riskTier.label}
+              </div>
+
+              <div className="text-[11px] text-slate-300 leading-snug border-t border-purple-500/20 pt-3">
+                <span className="text-pink-300 font-semibold block mb-0.5">Automated Action:</span>
+                {riskTier.action}
+              </div>
+
+              <Link
+                to="/auth"
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase tracking-wider text-white shadow-md hover:opacity-90 transition-opacity"
+              >
+                View in Live Portal ➔
+              </Link>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* ──────────────────────────────────────────────────────────────────────────
+          4. CORE AI MODULES & CASE STUDIES
+      ────────────────────────────────────────────────────────────────────────── */}
+      <section id="modules" className="py-20 relative z-10 border-t border-purple-500/10">
+        <div className="max-w-7xl mx-auto px-6">
+          
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6">
             <div>
               <span className="text-xs uppercase tracking-widest text-purple-400 font-bold mb-2 block">
-                FEATURED CASE STUDIES
+                CORE SYSTEM MODULES
               </span>
               <h2 className="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight">
-                Designing impact <br className="hidden sm:inline" />
-                through <span className="italic font-serif text-pink-400">meaningful</span> solutions.
+                Architected for precision <br className="hidden sm:inline" />
+                and <span className="italic font-serif text-pink-400">real-time</span> intervention.
               </h2>
             </div>
             
-            <a
-              href="#contact"
+            <Link
+              to="/auth"
               className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-semibold text-purple-300 hover:text-pink-300 group transition-colors"
             >
-              View All Projects
+              Access Faculty Modules
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </a>
+            </Link>
           </div>
 
-          {/* 3 Project Showcase Cards Grid */}
+          {/* 3 Core System Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {projects.map((proj, idx) => (
+            {modules.map((mod, idx) => (
               <motion.div
-                key={proj.id}
+                key={mod.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.15 }}
                 whileHover={{ y: -8 }}
-                onClick={() => setSelectedProject(proj)}
+                onClick={() => setSelectedModule(mod)}
                 className="group relative rounded-3xl bg-[#130d24]/80 border border-purple-500/20 hover:border-pink-500/50 p-6 backdrop-blur-xl overflow-hidden cursor-pointer shadow-xl hover:shadow-purple-500/20 transition-all duration-300 flex flex-col justify-between"
               >
                 {/* Glow Backdrop */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${proj.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${mod.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
                 {/* Card Top Preview Mockup Banner */}
                 <div className="relative h-48 rounded-2xl bg-[#0d081b] border border-purple-500/20 overflow-hidden mb-6 flex items-center justify-center p-4">
-                  {/* Decorative Mockup UI elements */}
                   <div className="w-full h-full rounded-xl bg-gradient-to-br from-purple-950/60 to-black/80 border border-purple-400/20 p-4 flex flex-col justify-between relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
@@ -539,19 +717,19 @@ export default function Landing() {
                         <div className="h-2 w-2 rounded-full bg-purple-400" />
                         <div className="h-2 w-2 rounded-full bg-indigo-400" />
                       </div>
-                      <span className="text-[9px] uppercase tracking-wider text-purple-300/80 font-mono">{proj.category}</span>
+                      <span className="text-[9px] uppercase tracking-wider text-purple-300/80 font-mono">{mod.category}</span>
                     </div>
 
                     <div className="my-auto text-center space-y-1">
                       <p className="text-lg font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-200 to-white">
-                        {proj.title}
+                        {mod.title}
                       </p>
-                      <p className="text-[10px] text-slate-400 line-clamp-1">{proj.subtitle}</p>
+                      <p className="text-[10px] text-slate-400 line-clamp-1">{mod.subtitle}</p>
                     </div>
 
                     <div className="flex items-center justify-between text-[10px] text-slate-400 border-t border-purple-500/20 pt-2">
-                      <span>Impact Metric</span>
-                      <span className="text-pink-300 font-mono font-semibold">{proj.stats?.accuracy || proj.stats?.rating || "100%"}</span>
+                      <span>Key Metric</span>
+                      <span className="text-pink-300 font-mono font-semibold">{mod.stats?.accuracy || mod.stats?.syncRate || mod.stats?.delivered || "100%"}</span>
                     </div>
                   </div>
                 </div>
@@ -559,22 +737,22 @@ export default function Landing() {
                 {/* Card Bottom Meta */}
                 <div className="relative z-10 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono text-purple-400 font-bold">{proj.number}</span>
+                    <span className="text-xs font-mono text-purple-400 font-bold">{mod.number}</span>
                     <div className="h-8 w-8 rounded-full bg-purple-900/40 border border-purple-500/30 flex items-center justify-center text-slate-300 group-hover:text-pink-300 group-hover:border-pink-500/60 group-hover:scale-110 transition-all">
                       <ArrowUpRight className="h-4 w-4" />
                     </div>
                   </div>
 
                   <h3 className="text-xl font-display font-bold text-white group-hover:text-pink-200 transition-colors">
-                    {proj.title}
+                    {mod.title}
                   </h3>
                   <p className="text-xs text-slate-400 line-clamp-2">
-                    {proj.subtitle}
+                    {mod.subtitle}
                   </p>
 
                   {/* Tags */}
                   <div className="flex flex-wrap gap-1.5 pt-2">
-                    {proj.tags.map((tag) => (
+                    {mod.tags.map((tag) => (
                       <span
                         key={tag}
                         className="px-2.5 py-1 rounded-md bg-purple-950/60 border border-purple-500/20 text-[10px] text-purple-300 font-medium"
@@ -592,32 +770,32 @@ export default function Landing() {
       </section>
 
       {/* ──────────────────────────────────────────────────────────────────────────
-          4. SERVICES & TOOLS SECTION
+          5. FEATURES & CAPABILITIES
       ────────────────────────────────────────────────────────────────────────── */}
-      <section id="services" className="py-20 relative z-10 border-t border-purple-500/10">
+      <section id="capabilities" className="py-20 relative z-10 border-t border-purple-500/10">
         <div className="max-w-7xl mx-auto px-6">
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
             
-            {/* Left Headline & Services Cards */}
+            {/* Left Headline & Feature Cards */}
             <div className="lg:col-span-8 space-y-10">
               <div>
                 <span className="text-xs uppercase tracking-widest text-purple-400 font-bold mb-2 block">
-                  SERVICES
+                  CAPABILITIES
                 </span>
                 <h2 className="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight">
-                  End-to-end design <br />
-                  solutions tailored <span className="italic font-serif text-pink-400">to your goals.</span>
+                  Holistic student success <br />
+                  and early warning <span className="italic font-serif text-pink-400">infrastructure.</span>
                 </h2>
               </div>
 
-              {/* 4 Service Cards Grid */}
+              {/* 4 Feature Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {services.map((srv: any, idx: number) => {
-                  const Icon = srv.icon || Sparkles;
+                {capabilities.map((srv, idx) => {
+                  const Icon = srv.icon;
                   return (
                     <motion.div
-                      key={srv.id || idx}
+                      key={srv.id}
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
@@ -634,37 +812,55 @@ export default function Landing() {
                       <p className="text-xs text-slate-400 leading-relaxed font-light">
                         {srv.description}
                       </p>
+                      <div className="flex flex-wrap gap-1.5 pt-2">
+                        {srv.tags.map((t) => (
+                          <span key={t} className="px-2 py-0.5 rounded bg-purple-950/60 text-[9px] text-purple-300 font-medium">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
                     </motion.div>
                   );
                 })}
               </div>
             </div>
 
-            {/* Right Tools I Use Card */}
+            {/* Right Campus Overview Widget */}
             <div className="lg:col-span-4 p-8 rounded-3xl bg-[#140d28]/80 border border-purple-500/25 backdrop-blur-xl shadow-2xl space-y-6">
-              <span className="text-xs uppercase tracking-widest text-purple-300 font-bold block">
-                TOOLS I USE
-              </span>
+              <div className="flex items-center gap-3">
+                <img src={kprLogo} alt="KPR" className="h-8 w-8 rounded-lg bg-white p-0.5 object-contain" />
+                <div>
+                  <span className="text-xs uppercase tracking-widest text-purple-300 font-bold block">
+                    KPRCAS DEPARTMENTS
+                  </span>
+                  <p className="text-[10px] text-slate-400">Integrated Academic Cohorts</p>
+                </div>
+              </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                {tools.map((tool) => (
-                  <motion.div
-                    key={tool.name}
-                    whileHover={{ scale: 1.08 }}
-                    className="p-3.5 rounded-2xl bg-[#0e091d] border border-purple-500/20 hover:border-pink-500/50 flex flex-col items-center justify-center text-center gap-1.5 group cursor-default transition-all shadow-md"
-                  >
-                    <span className="text-2xl">{tool.icon}</span>
-                    <span className="text-xs font-semibold text-slate-200 group-hover:text-pink-300 transition-colors">
-                      {tool.name}
-                    </span>
-                    <span className="text-[9px] text-slate-500 uppercase">{tool.category}</span>
-                  </motion.div>
-                ))}
+              <div className="grid grid-cols-2 gap-2.5 text-xs text-slate-300 font-medium">
+                <div className="p-2.5 rounded-xl bg-[#0e091d] border border-purple-500/20 flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-pink-400" /> Comp. Science
+                </div>
+                <div className="p-2.5 rounded-xl bg-[#0e091d] border border-purple-500/20 flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-purple-400" /> Info. Technology
+                </div>
+                <div className="p-2.5 rounded-xl bg-[#0e091d] border border-purple-500/20 flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-indigo-400" /> AI & Data Science
+                </div>
+                <div className="p-2.5 rounded-xl bg-[#0e091d] border border-purple-500/20 flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-pink-300" /> Commerce & CA
+                </div>
+                <div className="p-2.5 rounded-xl bg-[#0e091d] border border-purple-500/20 flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" /> Management
+                </div>
+                <div className="p-2.5 rounded-xl bg-[#0e091d] border border-purple-500/20 flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-amber-400" /> Arts & Science
+                </div>
               </div>
 
               <div className="pt-4 border-t border-purple-500/20">
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Leveraging modern production stacks with React, TypeScript, Tailwind CSS, Express, and Vite for lightning-fast digital solutions.
+                  Direct integration with MongoDB Atlas, Express Serverless backend, and React TypeScript frontend with 99.98% system uptime.
                 </p>
               </div>
             </div>
@@ -675,7 +871,7 @@ export default function Landing() {
       </section>
 
       {/* ──────────────────────────────────────────────────────────────────────────
-          5. PROCESS SECTION (Matching Reference)
+          6. 5-STEP INTERVENTION PROCESS
       ────────────────────────────────────────────────────────────────────────── */}
       <section id="process" className="py-20 relative z-10 border-t border-purple-500/10">
         <div className="max-w-7xl mx-auto px-6">
@@ -686,11 +882,11 @@ export default function Landing() {
             <div className="lg:col-span-7 space-y-10">
               <div>
                 <span className="text-xs uppercase tracking-widest text-purple-400 font-bold mb-2 block">
-                  MY PROCESS
+                  INTERVENTION PIPELINE
                 </span>
                 <h2 className="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight">
-                  A human-centered <br />
-                  approach to <span className="italic font-serif text-pink-400">digital design.</span>
+                  A proactive, systematic <br />
+                  approach to <span className="italic font-serif text-pink-400">student retention.</span>
                 </h2>
               </div>
 
@@ -733,18 +929,18 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Process Right Archway Portal Graphic (Matching Reference Image) */}
+            {/* Process Right Archway Graphic */}
             <div className="lg:col-span-5 flex items-center justify-center relative">
               <div className="relative w-full max-w-[380px] h-[480px] rounded-3xl overflow-hidden border border-pink-500/30 shadow-[0_0_60px_rgba(236,72,153,0.25)] group">
                 <img
                   src={portalArch}
-                  alt="Ethereal Portal"
+                  alt="KPRCAS Student Journey Portal"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#080511] via-transparent to-transparent opacity-80" />
                 <div className="absolute bottom-6 inset-x-6 p-4 rounded-2xl bg-[#100a20]/90 border border-pink-500/30 backdrop-blur-md text-center">
-                  <p className="text-xs uppercase tracking-widest text-pink-300 font-bold">THE EXPERIENCE PORTAL</p>
-                  <p className="text-[11px] text-slate-300 mt-1 font-light">Transforming visions into immersive reality.</p>
+                  <p className="text-xs uppercase tracking-widest text-pink-300 font-bold">KPRCAS STUDENT SUCCESS GATEWAY</p>
+                  <p className="text-[11px] text-slate-300 mt-1 font-light">Guiding every student towards academic excellence.</p>
                 </div>
               </div>
             </div>
@@ -755,7 +951,7 @@ export default function Landing() {
       </section>
 
       {/* ──────────────────────────────────────────────────────────────────────────
-          6. TESTIMONIALS / KIND WORDS
+          7. TESTIMONIALS / KIND WORDS
       ────────────────────────────────────────────────────────────────────────── */}
       <section id="testimonials" className="py-20 relative z-10 border-t border-purple-500/10">
         <div className="max-w-7xl mx-auto px-6">
@@ -763,21 +959,20 @@ export default function Landing() {
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6">
             <div>
               <span className="text-xs uppercase tracking-widest text-purple-400 font-bold mb-2 block">
-                KIND WORDS
+                CAMPUS IMPACT
               </span>
               <h2 className="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight">
-                Stories from <span className="italic font-serif text-pink-400">amazing people</span> <br />
-                I've had the pleasure to work with.
+                Stories from <span className="italic font-serif text-pink-400">faculty, students & parents.</span>
               </h2>
             </div>
             
-            <a
-              href="#contact"
+            <Link
+              to="/auth"
               className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-semibold text-purple-300 hover:text-pink-300 group transition-colors"
             >
-              View All Testimonials
+              Sign In to View All Reports
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </a>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -816,56 +1011,51 @@ export default function Landing() {
       </section>
 
       {/* ──────────────────────────────────────────────────────────────────────────
-          7. CONTACT BANNER ("Let's Build Something Meaningful Together")
+          8. CONTACT & INQUIRY BANNER
       ────────────────────────────────────────────────────────────────────────── */}
       <section id="contact" className="py-20 relative z-10 border-t border-purple-500/10">
         <div className="max-w-7xl mx-auto px-6">
           
           <div className="relative rounded-3xl bg-gradient-to-br from-[#170e2f]/95 via-[#120a22]/95 to-[#0b0617]/95 border border-purple-500/30 p-8 sm:p-12 backdrop-blur-2xl shadow-2xl overflow-hidden">
             
-            {/* Left Vertical Badge */}
-            <div className="hidden xl:flex absolute left-4 top-1/2 -translate-y-1/2 -rotate-90 origin-center text-[10px] uppercase tracking-[0.3em] font-mono text-purple-400/50 font-bold whitespace-nowrap pointer-events-none">
-              LET'S CREATE TOGETHER
-            </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
               
               {/* Contact Left Information */}
               <div className="lg:col-span-5 space-y-6">
                 <div>
                   <span className="text-xs uppercase tracking-widest text-pink-400 font-bold mb-2 block">
-                    HAVE A PROJECT IN MIND?
+                    KPRCAS ADMINISTRATION
                   </span>
                   <h3 className="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight">
-                    Let's build something <br />
+                    Protect every student's <br />
                     <span className="italic font-serif text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-300">
-                      meaningful
-                    </span> together.
+                      academic journey.
+                    </span>
                   </h3>
                 </div>
 
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
-                  Whether you're looking for full end-to-end design systems, AI platform interfaces, or student success systems, I'm here to bring your vision to life.
+                  Have questions about departmental batch sync, mentor assignment, or student risk scores? Submit an inquiry to the EduGuard administration team.
                 </p>
 
                 <div className="space-y-3 pt-2 text-xs text-slate-300">
-                  <a href="mailto:hello@liva.design" className="flex items-center gap-3 hover:text-pink-300 transition-colors">
+                  <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-lg bg-purple-900/40 border border-purple-500/30 flex items-center justify-center text-pink-400">
                       <Mail className="h-4 w-4" />
                     </div>
-                    <span>hello@liva.design</span>
-                  </a>
+                    <span>eduguard@kprcas.ac.in</span>
+                  </div>
 
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-lg bg-purple-900/40 border border-purple-500/30 flex items-center justify-center text-purple-400">
                       <MapPin className="h-4 w-4" />
                     </div>
-                    <span>Based in San Francisco, CA (Available Globally)</span>
+                    <span>KPR College of Arts and Science, Coimbatore, Tamil Nadu</span>
                   </div>
                 </div>
               </div>
 
-              {/* Contact Right Form (Working API /api/contact) */}
+              {/* Contact Right Form */}
               <div className="lg:col-span-7 bg-[#0f0a1f]/80 p-6 sm:p-8 rounded-2xl border border-purple-500/25 backdrop-blur-md">
                 
                 {formStatus && (
@@ -890,11 +1080,11 @@ export default function Landing() {
                 <form onSubmit={handleContactSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-[11px] uppercase tracking-wider text-slate-400 font-medium">Your Name</label>
+                      <label className="text-[11px] uppercase tracking-wider text-slate-400 font-medium">Your Name / Faculty ID</label>
                       <input
                         type="text"
                         required
-                        placeholder="Alex Morgan"
+                        placeholder="Dr. Rajesh / Faculty Name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         className="w-full px-4 py-2.5 rounded-xl bg-[#160f2b] border border-purple-500/30 focus:border-pink-500 focus:outline-none text-xs text-white placeholder:text-slate-500 transition-colors"
@@ -902,11 +1092,11 @@ export default function Landing() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[11px] uppercase tracking-wider text-slate-400 font-medium">Your Email</label>
+                      <label className="text-[11px] uppercase tracking-wider text-slate-400 font-medium">Email Address</label>
                       <input
                         type="email"
                         required
-                        placeholder="alex@company.com"
+                        placeholder="faculty@kprcas.ac.in"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full px-4 py-2.5 rounded-xl bg-[#160f2b] border border-purple-500/30 focus:border-pink-500 focus:outline-none text-xs text-white placeholder:text-slate-500 transition-colors"
@@ -914,26 +1104,43 @@ export default function Landing() {
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] uppercase tracking-wider text-slate-400 font-medium">Service Needed</label>
-                    <select
-                      value={service}
-                      onChange={(e) => setService(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl bg-[#160f2b] border border-purple-500/30 focus:border-pink-500 focus:outline-none text-xs text-white transition-colors"
-                    >
-                      <option value="UI/UX & AI Architecture">UI/UX & AI Architecture</option>
-                      <option value="Fintech & SaaS Design System">Fintech & SaaS Design System</option>
-                      <option value="EduGuard Campus Integration">EduGuard Campus Integration</option>
-                      <option value="User Research & Prototyping">User Research & Prototyping</option>
-                    </select>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] uppercase tracking-wider text-slate-400 font-medium">Department</label>
+                      <select
+                        value={department}
+                        onChange={(e) => setDepartment(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl bg-[#160f2b] border border-purple-500/30 focus:border-pink-500 focus:outline-none text-xs text-white transition-colors"
+                      >
+                        <option value="Computer Science & Engineering">Computer Science & Engineering</option>
+                        <option value="Information Technology">Information Technology</option>
+                        <option value="Artificial Intelligence & Data Science">AI & Data Science</option>
+                        <option value="Commerce & Accounting">Commerce & Accounting</option>
+                        <option value="Management Studies">Management Studies</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] uppercase tracking-wider text-slate-400 font-medium">Inquiry Type</label>
+                      <select
+                        value={service}
+                        onChange={(e) => setService(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl bg-[#160f2b] border border-purple-500/30 focus:border-pink-500 focus:outline-none text-xs text-white transition-colors"
+                      >
+                        <option value="Dropout Early Warning Inquiry">Dropout Early Warning Inquiry</option>
+                        <option value="ERP Live Sync Setup">ERP Live Sync Setup</option>
+                        <option value="Mentor Assignment & Counseling Hub">Mentor Assignment & Counseling</option>
+                        <option value="Parent Alert SMS System">Parent Alert SMS System</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[11px] uppercase tracking-wider text-slate-400 font-medium">Tell me about your project</label>
+                    <label className="text-[11px] uppercase tracking-wider text-slate-400 font-medium">Message / Request Details</label>
                     <textarea
                       rows={3}
                       required
-                      placeholder="We're launching a new digital platform and looking for high-end UX design..."
+                      placeholder="Enter specific student cohort or department requirements..."
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       className="w-full px-4 py-2.5 rounded-xl bg-[#160f2b] border border-purple-500/30 focus:border-pink-500 focus:outline-none text-xs text-white placeholder:text-slate-500 transition-colors resize-none"
@@ -945,13 +1152,7 @@ export default function Landing() {
                     disabled={submitting}
                     className="w-full py-3 px-6 rounded-xl font-semibold text-xs uppercase tracking-widest bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-400 hover:to-indigo-500 text-white shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    {submitting ? (
-                      "Sending Message..."
-                    ) : (
-                      <>
-                        Send Message <ArrowRight className="h-4 w-4" />
-                      </>
-                    )}
+                    {submitting ? "Submitting Inquiry..." : <>Submit Inquiry <ArrowRight className="h-4 w-4" /></>}
                   </button>
                 </form>
 
@@ -965,44 +1166,40 @@ export default function Landing() {
       </section>
 
       {/* ──────────────────────────────────────────────────────────────────────────
-          8. FOOTER
+          9. FOOTER
       ────────────────────────────────────────────────────────────────────────── */}
       <footer className="py-12 border-t border-purple-500/15 bg-[#06040d] relative z-10 text-xs text-slate-400">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-purple-600 to-pink-500 p-[1px]">
-              <div className="w-full h-full bg-[#0d091a] rounded-[7px] flex items-center justify-center font-bold text-xs text-pink-300">
-                L
-              </div>
-            </div>
+            <img src={kprLogo} alt="KPRCAS" className="h-9 w-9 rounded-lg bg-white p-0.5 object-contain" />
             <div>
-              <p className="font-display font-bold text-white tracking-wider">LIVA UX SPECIALIST</p>
-              <p className="text-[10px] text-slate-500">Designing the future, one experience at a time.</p>
+              <p className="font-display font-bold text-white tracking-wider">KPRCAS • EduGuard</p>
+              <p className="text-[10px] text-pink-400/80 uppercase tracking-wider">LEARN BEYOND • Dropout Prevention System</p>
             </div>
           </div>
 
           {/* Footer Nav */}
           <div className="flex flex-wrap items-center gap-6 text-[11px] uppercase tracking-wider">
-            <a href="#home" className="hover:text-pink-400 transition-colors">Home</a>
-            <a href="#work" className="hover:text-pink-400 transition-colors">Work</a>
-            <a href="#about" className="hover:text-pink-400 transition-colors">About</a>
-            <a href="#services" className="hover:text-pink-400 transition-colors">Services</a>
-            <a href="#process" className="hover:text-pink-400 transition-colors">Process</a>
-            <Link to="/auth" className="text-purple-400 hover:text-pink-300 transition-colors">Portal Login</Link>
+            <a href="#overview" className="hover:text-pink-400 transition-colors">Overview</a>
+            <a href="#calculator" className="hover:text-pink-400 transition-colors">Risk Predictor</a>
+            <a href="#modules" className="hover:text-pink-400 transition-colors">AI Modules</a>
+            <a href="#capabilities" className="hover:text-pink-400 transition-colors">Features</a>
+            <a href="#process" className="hover:text-pink-400 transition-colors">Intervention</a>
+            <Link to="/auth" className="text-purple-400 hover:text-pink-300 transition-colors">Faculty Login</Link>
           </div>
 
           <p className="text-[11px] text-slate-500">
-            © {new Date().getFullYear()} Liva UX Specialist. All rights reserved.
+            © {new Date().getFullYear()} KPR College of Arts and Science. All rights reserved.
           </p>
         </div>
       </footer>
 
       {/* ──────────────────────────────────────────────────────────────────────────
-          9. PROJECT DETAIL MODAL
+          10. MODULE DETAIL MODAL
       ────────────────────────────────────────────────────────────────────────── */}
       <AnimatePresence>
-        {selectedProject && (
+        {selectedModule && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -1011,7 +1208,7 @@ export default function Landing() {
               className="relative w-full max-w-2xl bg-[#140d28] border border-purple-500/40 rounded-3xl p-8 shadow-2xl space-y-6 overflow-hidden max-h-[90vh] overflow-y-auto"
             >
               <button
-                onClick={() => setSelectedProject(null)}
+                onClick={() => setSelectedModule(null)}
                 className="absolute top-6 right-6 h-8 w-8 rounded-full bg-purple-900/50 border border-purple-500/30 flex items-center justify-center text-slate-300 hover:text-white hover:bg-purple-800 transition-all"
               >
                 ✕
@@ -1019,26 +1216,26 @@ export default function Landing() {
 
               <div>
                 <span className="text-xs font-mono uppercase tracking-widest text-pink-400 font-bold block mb-1">
-                  CASE STUDY {selectedProject.number}
+                  MODULE {selectedModule.number} • {selectedModule.category}
                 </span>
                 <h3 className="text-2xl sm:text-3xl font-display font-bold text-white">
-                  {selectedProject.title}
+                  {selectedModule.title}
                 </h3>
-                <p className="text-xs text-purple-300 mt-1">{selectedProject.subtitle}</p>
+                <p className="text-xs text-purple-300 mt-1">{selectedModule.subtitle}</p>
               </div>
 
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
-                {selectedProject.description}
+                {selectedModule.description}
               </p>
 
               <div className="p-4 rounded-2xl bg-[#0e091d] border border-purple-500/20">
-                <span className="text-[11px] uppercase tracking-wider text-pink-300 font-bold block mb-1">Key Impact</span>
-                <p className="text-xs text-slate-200">{selectedProject.impact}</p>
+                <span className="text-[11px] uppercase tracking-wider text-pink-300 font-bold block mb-1">Impact at KPRCAS</span>
+                <p className="text-xs text-slate-200">{selectedModule.impact}</p>
               </div>
 
-              {/* Project Stats */}
+              {/* Stats */}
               <div className="grid grid-cols-3 gap-3">
-                {Object.entries(selectedProject.stats || {}).map(([k, v]) => (
+                {Object.entries(selectedModule.stats || {}).map(([k, v]) => (
                   <div key={k} className="p-3 rounded-xl bg-purple-950/40 border border-purple-500/20 text-center">
                     <p className="text-base font-bold font-display text-pink-400">{v}</p>
                     <p className="text-[10px] text-slate-400 uppercase mt-0.5">{k}</p>
@@ -1048,19 +1245,19 @@ export default function Landing() {
 
               <div className="pt-4 flex items-center justify-between border-t border-purple-500/20">
                 <div className="flex flex-wrap gap-1.5">
-                  {selectedProject.tags.map(t => (
+                  {selectedModule.tags.map(t => (
                     <span key={t} className="px-2.5 py-1 rounded-md bg-purple-900/40 text-[10px] text-purple-300">
                       {t}
                     </span>
                   ))}
                 </div>
 
-                <button
-                  onClick={() => setSelectedProject(null)}
+                <Link
+                  to="/auth"
                   className="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-gradient-to-r from-pink-500 to-purple-600 text-white"
                 >
-                  Close Preview
-                </button>
+                  Open in Portal ➔
+                </Link>
               </div>
             </motion.div>
           </div>

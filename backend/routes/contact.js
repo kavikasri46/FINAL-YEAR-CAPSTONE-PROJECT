@@ -4,150 +4,155 @@ import mongoose from "mongoose";
 const router = Router();
 const isMongoConnected = () => mongoose.connection.readyState === 1;
 
-// In-memory store for contact inquiries and newsletter subscribers
+// In-memory store for contact inquiries and demo requests
 const inquiries = [
   {
     id: "inq_1",
-    name: "Sarah Lin",
-    email: "sarah.lin@venturetech.io",
-    message: "We love your AI & UX architecture work. We would like to collaborate on our upcoming education analytics platform.",
-    service: "UI/UX & AI System Design",
-    status: "new",
+    name: "Dr. K. Raman",
+    email: "raman.k@kprcas.ac.in",
+    department: "Computer Science & Engineering",
+    message: "Requesting batch sync setup for Semester 6 attendance and internal assessment 2 marks.",
+    service: "ERP Live Sync Setup",
+    status: "responded",
     createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
   },
   {
     id: "inq_2",
-    name: "David Miller",
-    email: "david@apexpartners.com",
-    message: "Requesting a demo for EduGuard system integration with existing college ERP.",
-    service: "ERP Integration",
-    status: "responded",
+    name: "Mrs. Meena Sundaram",
+    email: "meena.parent@gmail.com",
+    department: "Information Technology",
+    message: "Inquiring about the parent alert notification system for upcoming mid-term results.",
+    service: "Parent Alert System",
+    status: "new",
     createdAt: new Date(Date.now() - 86400000).toISOString(),
   }
 ];
 
-const subscribers = new Set(["innovate@eduguard.edu", "contact@liva.design"]);
+const subscribers = new Set(["principal@kprcas.ac.in", "mentorship@kprcas.ac.in"]);
 
-// Case studies and landing metadata
-const portfolioData = {
+// KPRCAS EduGuard dynamic metadata
+const kprData = {
+  institution: "KPR College of Arts and Science (KPRCAS)",
+  motto: "LEARN BEYOND",
+  systemName: "EduGuard Dropout Prevention System",
   stats: [
-    { label: "Students & Users Protected", value: "2,400+", change: "+18% this term" },
-    { label: "Dropout Risk Prevented", value: "340+", change: "94% Model Accuracy" },
-    { label: "System Uptime & Stability", value: "99.98%", change: "Zero Cold Hangs" },
-    { label: "Partner Institutions", value: "14+", change: "Active Deployments" },
+    { label: "Students Monitored", value: "2,400+", change: "Active KPR Cohorts" },
+    { label: "Dropouts Prevented", value: "340+", change: "Timely Interventions" },
+    { label: "ML Prediction Accuracy", value: "94.8%", change: "KNN & Random Forest" },
+    { label: "Parent Alerts Sent", value: "1,850+", change: "Instant SMS/Email" },
   ],
-  projects: [
+  modules: [
     {
-      id: "nexora",
+      id: "risk-engine",
       number: "01",
-      title: "NEXORA",
-      subtitle: "Fintech Dashboard & Risk Analytics Redesign",
-      category: "Fintech",
-      tags: ["UX Research", "UI Design", "Prototyping"],
-      description: "High-density transactional risk analytics and predictive student financial aid disbursement interface with sub-millisecond data visualization.",
-      impact: "42% increase in advisor task completion speed and 98.4% user satisfaction rate.",
-      stats: { accuracy: "99.1%", latency: "< 45ms", users: "18.5k" },
+      title: "ML RISK ENGINE",
+      subtitle: "Predictive Dropout Probability Algorithm",
+      category: "Machine Learning",
+      tags: ["KNN Classifier", "Attendance Matrix", "Grade Trajectory"],
+      description: "Proprietary multi-tier predictive model that evaluates attendance drop velocity, internal test fluctuations, and assignment submissions to compute a real-time Risk Index (0-100%).",
+      impact: "Identified 94% of at-risk students at least 3 weeks before mid-semester examinations.",
+      stats: { accuracy: "94.8%", latency: "< 35ms", monitored: "2,400+" },
       color: "from-purple-500/20 to-pink-500/10",
       featured: true,
     },
     {
-      id: "mindful",
+      id: "erp-sync",
       number: "02",
-      title: "MINDFUL",
-      subtitle: "Student Mental Wellness & Early Warning App",
-      category: "Wellness & EdTech",
-      tags: ["UX Research", "UI Design", "Interaction"],
-      description: "AI-guided mental health companion featuring adaptive sentiment assessment, burnout detection, and instant mentor escalation pathways.",
-      impact: "Adopted across 4 universities, reducing critical stress interventions by 65%.",
-      stats: { rating: "4.9/5", dailyActive: "8.2k", retention: "84%" },
+      title: "ERP SYNC ENGINE",
+      subtitle: "Unified Academic & Attendance Importer",
+      category: "System Integration",
+      tags: ["Auto Ingestion", "KPR ERP API", "Bi-directional"],
+      description: "Direct integration pipeline syncing daily attendance percentages, CIA 1/2 marks, semester SGPA/CGPA, and arrears history directly into centralized faculty dashboards.",
+      impact: "Eliminated manual record checking across 12 academic departments.",
+      stats: { syncRate: "100%", departments: "12", timeSaved: "18 hrs/wk" },
       color: "from-pink-500/20 to-purple-500/10",
       featured: true,
     },
     {
-      id: "roamia",
+      id: "parent-alert",
       number: "03",
-      title: "ROAMIA",
-      subtitle: "Smart Academic Campus & Timetable Navigator",
-      category: "Campus AI",
-      tags: ["UX Research", "UI Design", "Prototyping"],
-      description: "Intelligent timetable scheduling and conflict-free room allocation engine with real-time push alerts and live student attendance tracking.",
-      impact: "Zero scheduling conflicts recorded across 120+ faculty members and 2,400 students.",
-      stats: { accuracy: "100%", schedules: "1,200+", timeSaved: "14 hrs/wk" },
+      title: "PARENT ALERT AI",
+      subtitle: "Automated Early Warning Notification Hub",
+      category: "Early Intervention",
+      tags: ["SMS Broadcast", "WhatsApp Bot", "Counseling Escalation"],
+      description: "Instant dispatch system that notifies parents when attendance falls below the mandatory 75% threshold or when sudden score regressions are detected.",
+      impact: "Increased parent-mentor counseling attendance by 78% across high-risk student cohorts.",
+      stats: { delivered: "99.4%", responseRate: "82%", alerts: "1,850+" },
       color: "from-violet-500/20 to-fuchsia-500/10",
       featured: true,
     }
   ],
-  services: [
+  capabilities: [
     {
-      id: "user-research",
-      title: "User Research",
-      description: "Uncover deep behavioral insights and student engagement pain points to build truly meaningful solutions.",
-      icon: "Search",
-      features: ["Cognitive walkthroughs", "Dropout risk behavioral analysis", "Quantitative surveys"]
+      id: "attendance-tracking",
+      title: "Attendance Anomaly Detection",
+      description: "Instantly flags sudden absentee streaks and warns mentors before students fall below university eligibility limits.",
+      icon: "Clock",
+      features: ["75% university eligibility radar", "Consecutive absence triggers", "Biometric & ERP sync"]
     },
     {
-      id: "interaction-design",
-      title: "Interaction Design",
-      description: "Design intuitive, buttery smooth workflows that empower educators, mentors, and parents seamlessly.",
-      icon: "Sparkles",
-      features: ["Micro-interactions", "Responsive ergonomics", "Fluid state transitions"]
+      id: "marks-analytics",
+      title: "Internal Assessment Forecasting",
+      description: "Analyzes continuous assessment trends to forecast final semester pass probabilities and subject-level stress.",
+      icon: "TrendingUp",
+      features: ["CIA mark drop alarms", "Subject vulnerability matrix", "Historical grade curve comparison"]
     },
     {
-      id: "ui-visual-design",
-      title: "UI Visual Design",
-      description: "Craft breathtaking, state-of-the-art glassmorphic interfaces with cybernetic glowing accents.",
-      icon: "Layers",
-      features: ["Dark mode precision", "Custom design tokens", "High-conversion typography"]
+      id: "mentorship-hub",
+      title: "1-on-1 Mentorship Counseling",
+      description: "Empowers faculty mentors with comprehensive student dossiers, scheduled counseling logs, and curated YouTube study resources.",
+      icon: "Users",
+      features: ["Assigned student dashboards", "Counseling progress notes", "Remedial video masterclasses"]
     },
     {
-      id: "prototyping",
-      title: "Prototyping & AI",
-      description: "Bring ambitious ideas to life with high-fidelity interactive models and live machine learning integrations.",
-      icon: "Cpu",
-      features: ["Live API simulation", "KNN & Random Forest analytics", "Instant cloud preview"]
+      id: "parent-engagement",
+      title: "Multichannel Parent Bridge",
+      description: "Keeps parents informed with transparent, automated alerts regarding student attendance, test results, and fee notices.",
+      icon: "ShieldAlert",
+      features: ["Automated SMS delivery", "One-click parent call logging", "Multilingual notification templates"]
     }
   ],
   process: [
-    { step: "01", name: "EMPATHIZE", desc: "Understand students, mentors, and administrative pain points deeply." },
-    { step: "02", name: "DEFINE", desc: "Synthesize academic behavioral data and define the exact dropout triggers." },
-    { step: "03", name: "IDEATE", desc: "Brainstorm predictive algorithms, smart notifications, and visual dashboard architectures." },
-    { step: "04", name: "DESIGN", desc: "Craft intuitive neon-glow interfaces with responsive glassmorphic cards." },
-    { step: "05", name: "TEST & REFINE", desc: "Validate with real academic cohorts, verify API response latencies, and iterate." }
+    { step: "01", name: "DATA INGESTION", desc: "Automated sync of attendance logs, CIA marks, and student profiles from KPRCAS ERP." },
+    { step: "02", name: "AI RISK MODELING", desc: "KNN & weighted risk algorithms compute composite vulnerability scores for every student." },
+    { step: "03", name: "RISK TIERING", desc: "Categorizes students into High Risk (🔴), Medium Risk (🟡), and Low Risk (🟢) cohorts." },
+    { step: "04", name: "EARLY INTERVENTION", desc: "Triggers automated parent SMS alerts and assigns dedicated mentor counseling sessions." },
+    { step: "05", name: "RECOVERY & RETENTION", desc: "Tracks weekly recovery metrics, remedial session attendance, and academic turnaround." }
   ],
   testimonials: [
     {
       id: "t1",
-      quote: "The interface transformed our student monitoring pipeline. Mentor engagement jumped 40% in just two weeks.",
-      name: "Nathan Park",
-      role: "Product Lead, Nexora",
+      quote: "EduGuard detected 42 students at risk in our department 3 weeks before finals. With targeted mentoring, every single student cleared the semester!",
+      name: "Dr. Rajesh Verma",
+      role: "Head of Mentorship, KPRCAS",
       avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
     },
     {
       id: "t2",
-      quote: "Working with this system was an absolute pleasure. The predictive AI alerts prevented dozens of dropouts this semester.",
-      name: "Sofia Martinez",
-      role: "Founder, Mindful EdTech",
-      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80"
+      quote: "The personalized counseling and video revision sessions helped me identify weak spots in Calculus and bring my attendance back above 88%.",
+      name: "Arjun Patel",
+      role: "Final Year Student, KPRCAS",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80"
     },
     {
       id: "t3",
-      quote: "The visual design is unmatched—it feels like a glimpse into 2035 while delivering rock-solid reliability.",
-      name: "James Wilson",
-      role: "CTO, Roamia Tech",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80"
+      quote: "Receiving timely SMS updates about internal mark drops allowed us to support our child from home before any serious academic consequence occurred.",
+      name: "Mr. S. Patel",
+      role: "Parent, KPRCAS Cohort",
+      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80"
     }
   ]
 };
 
-// GET /api/landing/data - Dynamic landing page showcase data
+// GET /api/landing/data
 router.get("/data", (req, res) => {
-  res.json(portfolioData);
+  res.json(kprData);
 });
 
-// POST /api/contact - Send message / inquiry
+// POST /api/contact
 router.post("/", async (req, res) => {
   try {
-    const { name, email, message, service } = req.body;
+    const { name, email, department, message, service } = req.body;
     if (!name || !email || !message) {
       return res.status(400).json({ error: "Name, email, and message are required fields." });
     }
@@ -155,12 +160,14 @@ router.post("/", async (req, res) => {
     const cleanName = name.trim();
     const cleanEmail = email.trim().toLowerCase();
     const cleanMsg = message.trim();
-    const selectedService = service || "General Inquiry";
+    const selectedDept = department || "Computer Science";
+    const selectedService = service || "Dropout Early Warning Inquiry";
 
     const inquiry = {
       id: "inq_" + Date.now(),
       name: cleanName,
       email: cleanEmail,
+      department: selectedDept,
       message: cleanMsg,
       service: selectedService,
       status: "new",
@@ -171,20 +178,20 @@ router.post("/", async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "Thank you for reaching out! Your message has been received.",
+      message: "Inquiry received! The KPRCAS EduGuard administration team will follow up shortly.",
       inquiryId: inquiry.id,
     });
   } catch (err) {
-    res.status(500).json({ error: "Failed to submit message. Please try again." });
+    res.status(500).json({ error: "Failed to submit inquiry. Please try again." });
   }
 });
 
-// GET /api/contact - List inquiries
+// GET /api/contact
 router.get("/", (req, res) => {
   res.json(inquiries);
 });
 
-// POST /api/newsletter - Subscribe
+// POST /api/newsletter
 router.post("/newsletter", (req, res) => {
   try {
     const { email } = req.body;
@@ -193,7 +200,7 @@ router.post("/newsletter", (req, res) => {
     }
     const cleanEmail = email.trim().toLowerCase();
     subscribers.add(cleanEmail);
-    res.json({ success: true, message: "Successfully subscribed to futuristic product updates!" });
+    res.json({ success: true, message: "Subscribed to KPRCAS EduGuard academic updates!" });
   } catch (err) {
     res.status(500).json({ error: "Subscription failed." });
   }
