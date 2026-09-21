@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shield, ArrowRight, UserPlus, LogIn, GraduationCap, Users, Heart, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Shield, ArrowRight, ArrowLeft, UserPlus, LogIn, GraduationCap, Users, Heart, AlertCircle, CheckCircle2, Home } from "lucide-react";
 import { UserRole } from "@/lib/types";
 import { motion, AnimatePresence } from "framer-motion";
 import loginBg from "@/images/login bacground.webp";
@@ -19,7 +19,7 @@ const roles: { value: UserRole; label: string; icon: typeof GraduationCap; desc:
 ];
 
 export default function Auth() {
-  const { login, register, isAuthenticated } = useAuth();
+  const { login, register, loginAsDemo, isAuthenticated } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -139,8 +139,22 @@ export default function Auth() {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-8 bg-background relative">
+      <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-8 bg-background relative">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-pink-500/5 pointer-events-none" />
+
+        {/* Back to Landing Page Navigation Button */}
+        <div className="w-full max-w-md mb-4 flex items-center justify-between z-20">
+          <Link
+            to="/landing"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold text-purple-300 bg-purple-950/50 hover:bg-purple-900/70 border border-purple-500/30 hover:border-pink-500/50 backdrop-blur-md transition-all duration-200 shadow-sm group"
+          >
+            <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform text-pink-400" />
+            Back to Landing Page
+          </Link>
+          <Link to="/landing" className="text-[11px] text-muted-foreground hover:text-white flex items-center gap-1">
+            <Home className="h-3 w-3" /> Home
+          </Link>
+        </div>
 
         <motion.div
           key={mode}
@@ -150,13 +164,16 @@ export default function Auth() {
           className="w-full max-w-md relative"
         >
           <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-purple-500/20 rounded-2xl blur-xl animate-pulse-glow pointer-events-none" />
-          <div className="relative bg-card border border-purple-500/20 rounded-2xl p-8 backdrop-blur-sm">
-            <div className="lg:hidden flex items-center gap-2 mb-8">
+          <div className="relative bg-card border border-purple-500/20 rounded-2xl p-8 backdrop-blur-sm shadow-2xl">
+            <div className="lg:hidden flex items-center gap-2 mb-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-purple-500/30 rounded-full blur-sm" />
                 <img src={collegeLogo} alt="KPR" className="h-8 w-8 rounded-full object-cover relative" />
               </div>
-              <h1 className="text-xl font-display font-bold text-gradient">EduGuard</h1>
+              <div>
+                <h1 className="text-xl font-display font-bold text-gradient">KPRCAS EduGuard</h1>
+                <p className="text-[9px] uppercase tracking-widest text-purple-400/80">Learn Beyond</p>
+              </div>
             </div>
 
             <div className="flex border rounded-lg p-1 mb-6 bg-muted/50 relative">
@@ -300,13 +317,7 @@ export default function Auth() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        const demoEmails: Record<string, string> = {
-                          admin: "admin@school.edu",
-                          student: "arjun@school.edu",
-                          mentor: "rajesh@school.edu",
-                          parent: "parent@school.edu",
-                        };
-                        login(demoEmails[value], "demo123");
+                        loginAsDemo(value);
                       }}
                       className="text-xs gap-1.5 justify-start hover:border-purple-500/50 hover:bg-purple-500/10"
                     >

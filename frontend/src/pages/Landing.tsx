@@ -51,7 +51,7 @@ interface ModuleItem {
 
 export default function Landing() {
   const navigate = useNavigate();
-  const { user, login } = useAuth();
+  const { user, loginAsDemo } = useAuth();
 
   // Contact form state
   const [name, setName] = useState("");
@@ -205,14 +205,8 @@ export default function Landing() {
     }
   ];
 
-  const handle1ClickLogin = async (role: "admin" | "student" | "mentor" | "parent") => {
-    const demoEmails: Record<string, string> = {
-      admin: "admin@school.edu",
-      student: "arjun@school.edu",
-      mentor: "rajesh@school.edu",
-      parent: "parent@school.edu",
-    };
-    await login(demoEmails[role], "password");
+  const handle1ClickLogin = (role: "admin" | "student" | "mentor" | "parent") => {
+    loginAsDemo(role);
     navigate("/");
   };
 

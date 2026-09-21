@@ -1,8 +1,8 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, Users, GraduationCap, UserCheck, BarChart3, Bell, Calendar, LogOut, ChevronDown, Shield, Upload, AlertTriangle,
-  Database, Layers, Activity, BookOpen, FileText, Cpu, RefreshCw, PieChart,
+  Database, Layers, Activity, BookOpen, FileText, Cpu, RefreshCw, PieChart, ArrowLeft, Globe,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -83,6 +83,23 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-2 py-3">
+        {/* Quick Back to Landing Page link */}
+        <SidebarGroup className="pb-1">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link
+                  to="/landing"
+                  className="flex items-center gap-3 px-3 py-2 rounded-xl text-purple-300 hover:text-pink-300 bg-purple-950/40 hover:bg-purple-900/60 border border-purple-500/25 transition-all text-xs font-semibold mb-1 shadow-sm"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5 text-pink-400" />
+                  <span>Back to Landing Page</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest px-3">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -150,6 +167,9 @@ export function AppSidebar() {
                 Switch to {role}
               </DropdownMenuItem>
             ))}
+            <DropdownMenuItem onClick={() => navigate("/landing")} className="text-purple-300">
+              <Globe className="h-4 w-4 mr-2 text-pink-400" /> View Landing Page
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={logout} className="text-destructive">
               <LogOut className="h-4 w-4 mr-2" /> Sign Out
             </DropdownMenuItem>

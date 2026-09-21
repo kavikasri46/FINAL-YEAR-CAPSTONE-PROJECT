@@ -1,8 +1,9 @@
 import { ReactNode, useState } from "react";
+import { Link } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useAuth } from "@/contexts/AuthContext";
-import { Bell } from "lucide-react";
+import { Bell, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -40,18 +41,25 @@ export function Layout({ children }: { children: ReactNode }) {
               </div>
             </div>
 
-            {/* 🔔 Notification Bell */}
-            <Button variant="ghost" size="icon" className="relative">
+            {/* Right Header Actions */}
+            <div className="flex items-center gap-2">
+              <Link
+                to="/landing"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-purple-300 bg-purple-950/40 hover:bg-purple-900/60 border border-purple-500/25 transition-all shadow-sm"
+              >
+                <Globe className="h-3.5 w-3.5 text-pink-400" /> Landing Page
+              </Link>
 
-              <Bell className="h-4 w-4" />
-
-              {notifications.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-destructive rounded-full text-[10px] text-destructive-foreground flex items-center justify-center font-bold">
-                  {notifications.length}
-                </span>
-              )}
-
-            </Button>
+              {/* 🔔 Notification Bell */}
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-4 w-4" />
+                {notifications.length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-destructive rounded-full text-[10px] text-destructive-foreground flex items-center justify-center font-bold">
+                    {notifications.length}
+                  </span>
+                )}
+              </Button>
+            </div>
 
           </header>
 

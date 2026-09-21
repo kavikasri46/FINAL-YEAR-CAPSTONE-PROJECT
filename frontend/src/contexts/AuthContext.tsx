@@ -20,6 +20,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   switchRole: (role: UserRole) => void;
+  loginAsDemo: (role: UserRole) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,12 +51,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   });
 
+  const loginAsDemo = (role: UserRole) => {
+    const demo = demoUsers[role] || demoUsers.admin;
+    setUser(demo);
+    try {
+      localStorage.setItem("user", JSON.stringify(demo));
+      localStorage.setItem("token", "demo-token-" + demo.id);
+    } catch {}
+  };
+
   const login = async (email: string, password: string): Promise<string | null> => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPassword = password.trim();
 
     if (!cleanEmail || !cleanPassword) {
       return "Please enter both email and password.";
+    }
+
+    // 0. Quick check for direct demo keyword
+    if (cleanEmail === "admin" || cleanEmail === "student" || cleanEmail === "mentor" || cleanEmail === "parent") {
+      loginAsDemo(cleanEmail as UserRole);
+      return null;
     }
 
     // 1. Try Backend API first
@@ -94,12 +110,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {}
 
     // 3. Check demo users (case-insensitive)
-    const demo = Object.values(demoUsers).find(
-      (u) => u.email.trim().toLowerCase() === cleanEmail
+    const demoRole = (Object.keys(demoUsers) as UserRole[]).find(
+      (r) => demoUsers[r].email.toLowerCase() === cleanEmail
     );
-    if (demo) {
-      setUser(demo);
-      try { localStorage.setItem("user", JSON.stringify(demo)); } catch {}
+    if (demoRole) {
+      loginAsDemo(demoRole);
       return null;
     }
 
@@ -174,15 +189,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const switchRole = (role: UserRole) => {
-    const demoUser = demoUsers[role];
-    if (demoUser) {
-      setUser(demoUser);
-      try { localStorage.setItem("user", JSON.stringify(demoUser)); } catch {}
-    }
+    loginAsDemo(role);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user, switchRole }}>
+    <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user, switchRole, loginAsDemo }}>
       {children}
     </AuthContext.Provider>
   );
