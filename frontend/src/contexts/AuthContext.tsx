@@ -116,10 +116,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return "Please fill out all required fields.";
     }
 
+    let authUser: AuthUser = {
+      id: "u" + Date.now(),
+      name: cleanName,
+      email: cleanEmail,
+      role,
+    };
+
     // 1. Try Backend API registration
     try {
       const res = await api.register(cleanName, cleanEmail, cleanPassword, role);
       if (res && res.user) {
+        authUser = {
+          id: res.user.id || res.user._id || authUser.id,
+          name: res.user.name || cleanName,
+          email: res.user.email || cleanEmail,
+          role: (res.user.role as UserRole) || role,
+        };
         if (res.token) {
           try { localStorage.setItem("token", res.token); } catch {}
         }
@@ -134,22 +147,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 2. Also save to local storage fallback
     try {
       const registered = getRegisteredUsers();
-      if (registered.some((u) => u.email.trim().toLowerCase() === cleanEmail)) {
-        return "An account with this email already exists.";
-      }
+      const existingIdx = registered.findIndex((u) => u.email.trim().toLowerCase() === cleanEmail);
       const newUser: RegisteredUser = {
-        id: "u" + Date.now(),
-        name: cleanName,
-        email: cleanEmail,
-        role,
+        ...authUser,
         password: cleanPassword,
       };
-      registered.push(newUser);
+      if (existingIdx >= 0) {
+        registered[existingIdx] = newUser;
+      } else {
+        registered.push(newUser);
+      }
       try { localStorage.setItem("registeredUsers", JSON.stringify(registered)); } catch {}
-      return null;
-    } catch {
-      return "Unable to save user registration. Please try again.";
-    }
+    } catch {}
+
+    // 3. Immediately log user in
+    setUser(authUser);
+    try { localStorage.setItem("user", JSON.stringify(authUser)); } catch {}
+    return null;
   };
 
   const logout = () => {

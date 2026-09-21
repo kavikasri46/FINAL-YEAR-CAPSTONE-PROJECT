@@ -285,10 +285,38 @@ export default function Auth() {
                 className="w-full gap-2 gradient-primary hover:opacity-90 transition-all duration-300 animate-pulse-glow"
                 disabled={submitting}
               >
-                {submitting ? "Please wait..." : (mode === "login" ? <>Sign In <ArrowRight className="h-4 w-4" /></> : <>Create Account <ArrowRight className="h-4 w-4" /></>)}
+                {submitting ? "Please wait..." : (mode === "login" ? <>Sign In <ArrowRight className="h-4 w-4" /></> : <>Create Account & Sign In <ArrowRight className="h-4 w-4" /></>)}
               </Button>
             </form>
 
+            {mode === "login" && (
+              <div className="pt-4 border-t border-border/50">
+                <p className="text-xs text-muted-foreground text-center mb-3">Or sign in with 1-click demo account:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {roles.map(({ value, label, icon: Icon }) => (
+                    <Button
+                      key={value}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const demoEmails: Record<string, string> = {
+                          admin: "admin@school.edu",
+                          student: "arjun@school.edu",
+                          mentor: "rajesh@school.edu",
+                          parent: "parent@school.edu",
+                        };
+                        login(demoEmails[value], "demo123");
+                      }}
+                      className="text-xs gap-1.5 justify-start hover:border-purple-500/50 hover:bg-purple-500/10"
+                    >
+                      <Icon className="h-3.5 w-3.5 text-purple-400" />
+                      {label} Demo
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </motion.div>
       </div>
