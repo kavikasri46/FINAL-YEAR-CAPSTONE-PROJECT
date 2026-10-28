@@ -32,7 +32,6 @@ import {
 import { api } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 import kprLogo from "@/images/kpr logo.jpg";
-import heroPortrait from "@/images/hero_portrait.jpg";
 import portalArch from "@/images/portal_arch.jpg";
 
 interface ModuleItem {
@@ -327,164 +326,110 @@ export default function Landing() {
       {/* ──────────────────────────────────────────────────────────────────────────
           2. HERO SECTION
       ────────────────────────────────────────────────────────────────────────── */}
-      <section id="overview" className="relative pt-12 pb-20 md:pt-16 md:pb-28 z-10">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+      <section id="overview" className="relative pt-16 pb-24 md:pt-24 md:pb-32 z-10">
+        <div className="max-w-5xl mx-auto px-6 text-center space-y-8 flex flex-col items-center justify-center">
           
-          {/* Hero Left Content */}
-          <div className="lg:col-span-6 space-y-7">
-            
-            {/* Top Pill Tag */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-purple-950/60 border border-purple-500/30 text-purple-300 text-xs tracking-widest uppercase font-medium backdrop-blur-md shadow-sm"
-            >
-              <span className="w-2 h-2 rounded-full bg-pink-400 animate-ping" />
-              | KPRCAS AI-POWERED STUDENT SUCCESS PLATFORM |
-            </motion.div>
+          {/* Top Pill Tag */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-purple-950/60 border border-purple-500/30 text-purple-300 text-xs tracking-widest uppercase font-medium backdrop-blur-md shadow-sm"
+          >
+            <span className="w-2 h-2 rounded-full bg-pink-400 animate-ping" />
+            | KPRCAS AI-POWERED STUDENT SUCCESS PLATFORM |
+          </motion.div>
 
-            {/* Display Headline */}
-            <motion.h1
-              initial={{ opacity: 0, y: 25 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl sm:text-5xl md:text-6xl font-display font-extrabold leading-[1.12] tracking-tight text-white"
+          {/* Display Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-4xl sm:text-6xl md:text-7xl font-display font-extrabold leading-[1.1] tracking-tight text-white max-w-4xl"
+          >
+            Predicting dropout risk <br />
+            before it{" "}
+            <span className="italic font-serif font-normal text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-300 drop-shadow-[0_0_40px_rgba(236,72,153,0.45)]">
+              shapes futures.
+            </span>
+          </motion.h1>
+
+          {/* Subtext */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-base sm:text-xl text-slate-300/85 leading-relaxed max-w-3xl font-light mx-auto"
+          >
+            Empowering KPRCAS educators and mentors with real-time ML risk scoring, automated parent alert dispatches, and deep ERP academic integration to ensure zero student dropouts.
+          </motion.p>
+
+          {/* CTA Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="flex flex-wrap items-center justify-center gap-4 pt-2"
+          >
+            <Link
+              to="/auth"
+              className="px-8 py-3.5 rounded-full text-sm font-semibold tracking-wide uppercase bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-400 hover:to-indigo-500 text-white shadow-xl shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2 group"
             >
-              Predicting dropout risk <br />
-              before it{" "}
-              <span className="italic font-serif font-normal text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-300 drop-shadow-[0_0_35px_rgba(236,72,153,0.35)]">
-                shapes futures.
+              Launch EduGuard Portal
+              <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </Link>
+
+            <a
+              href="#calculator"
+              className="px-7 py-3.5 rounded-full text-sm font-medium tracking-wide uppercase bg-[#140f26]/80 hover:bg-[#1c1536] text-slate-200 border border-purple-500/25 hover:border-purple-400/50 backdrop-blur-md transition-all duration-300 flex items-center gap-2 shadow-lg hover:scale-105"
+            >
+              <Sliders className="h-4 w-4 text-pink-400" /> Test Risk Predictor
+            </a>
+          </motion.div>
+
+          {/* Metrics Pill Row */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 w-full max-w-4xl"
+          >
+            <div className="p-4 rounded-2xl bg-[#17102c]/70 border border-purple-500/20 backdrop-blur-xl text-center">
+              <span className="text-2xl sm:text-3xl font-bold font-display text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-300">
+                94.8%
               </span>
-            </motion.h1>
-
-            {/* Subtext */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-base sm:text-lg text-slate-300/85 leading-relaxed max-w-xl font-light"
-            >
-              Empowering KPRCAS educators and mentors with real-time ML risk scoring, automated parent alert dispatches, and deep ERP academic integration to ensure zero student dropouts.
-            </motion.p>
-
-            {/* CTA Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-wrap items-center gap-4 pt-1"
-            >
-              <Link
-                to="/auth"
-                className="px-8 py-3.5 rounded-full text-sm font-semibold tracking-wide uppercase bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-400 hover:to-indigo-500 text-white shadow-xl shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2 group"
-              >
-                Launch EduGuard Portal
-                <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </Link>
-
-              <a
-                href="#calculator"
-                className="px-7 py-3.5 rounded-full text-sm font-medium tracking-wide uppercase bg-[#140f26]/80 hover:bg-[#1c1536] text-slate-200 border border-purple-500/25 hover:border-purple-400/50 backdrop-blur-md transition-all duration-300 flex items-center gap-2 shadow-lg"
-              >
-                <Sliders className="h-4 w-4 text-pink-400" /> Test Risk Predictor
-              </a>
-            </motion.div>
-
-            {/* Monitoring Status Badge */}
-            <div className="flex items-center gap-3 pt-2 text-xs text-slate-400">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-pink-500"></span>
-              </span>
-              <div>
-                <span className="text-pink-300 font-semibold uppercase tracking-wider">ACTIVE KPRCAS MONITORING</span>
-                <p className="text-slate-400 text-[11px]">2,400+ students protected across 12 departments</p>
-              </div>
+              <p className="text-[11px] text-slate-400 font-light mt-1">ML Prediction Accuracy</p>
             </div>
-          </div>
-
-          {/* Hero Right Visual Showcase (Matching Reference Layout) */}
-          <div className="lg:col-span-6 relative flex items-center justify-center">
-            
-            {/* Luminous Center Ring Glow */}
-            <div className="absolute w-[360px] sm:w-[460px] h-[360px] sm:h-[460px] rounded-full border border-pink-500/30 bg-gradient-to-tr from-purple-600/20 via-pink-500/10 to-transparent blur-sm pointer-events-none animate-pulse-glow" />
-            <div className="absolute w-[300px] sm:w-[380px] h-[300px] sm:h-[380px] rounded-full border-2 border-pink-400/40 shadow-[0_0_60px_rgba(244,114,182,0.35)] pointer-events-none" />
-
-            {/* Main Center Mask Container */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="relative z-10 w-[300px] sm:w-[390px] h-[300px] sm:h-[390px] rounded-full overflow-hidden border-4 border-purple-500/30 shadow-[0_0_80px_rgba(168,85,247,0.3)] group"
-            >
-              <img
-                src={heroPortrait}
-                alt="EduGuard KPR Student Success"
-                className="w-full h-full object-cover object-center scale-105 group-hover:scale-110 transition-transform duration-700 ease-out"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#080511] via-transparent to-purple-900/10" />
-            </motion.div>
-
-            {/* Floating Glass Card 1: Top Right */}
-            <motion.div
-              initial={{ opacity: 0, x: 30, y: -20 }}
-              animate={{ opacity: 1, x: 0, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.3 }}
-              className="absolute -top-4 right-0 sm:right-4 z-20 p-4 rounded-2xl bg-[#17102c]/85 border border-pink-500/30 backdrop-blur-xl shadow-2xl shadow-purple-950/80 max-w-[210px]"
-            >
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-pink-300">PREVENTING</span>
-                <Shield className="h-3 w-3 text-pink-400 fill-pink-400/40" />
-              </div>
-              <p className="text-xs font-medium text-slate-200 leading-snug">
-                with empathy & <br />early AI alerts.
-              </p>
-            </motion.div>
-
-            {/* Floating Glass Card 2: Bottom Right */}
-            <motion.div
-              initial={{ opacity: 0, x: 30, y: 30 }}
-              animate={{ opacity: 1, x: 0, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.4 }}
-              className="absolute -bottom-6 right-0 sm:right-6 z-20 p-4 rounded-2xl bg-[#17102c]/90 border border-purple-500/30 backdrop-blur-xl shadow-2xl shadow-purple-950/80 max-w-[220px]"
-            >
-              <span className="text-[10px] font-bold uppercase tracking-widest text-purple-300 block mb-2">
-                CORE PREDICTORS
+            <div className="p-4 rounded-2xl bg-[#17102c]/70 border border-purple-500/20 backdrop-blur-xl text-center">
+              <span className="text-2xl sm:text-3xl font-bold font-display text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-indigo-300">
+                2,400+
               </span>
-              <ul className="text-xs text-slate-300 space-y-1 font-light">
-                <li className="flex items-center gap-1.5">
-                  <span className="h-1 w-1 rounded-full bg-pink-400" /> Attendance Anomaly Radar
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <span className="h-1 w-1 rounded-full bg-purple-400" /> Internal Mark Drop Matrix
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <span className="h-1 w-1 rounded-full bg-indigo-400" /> Semester Risk Forecast
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <span className="h-1 w-1 rounded-full bg-pink-300" /> Parent SMS Broadcast
-                </li>
-              </ul>
-            </motion.div>
-
-            {/* Floating Stats Badge: Center Bottom Left */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.5 }}
-              className="absolute bottom-2 left-0 sm:left-4 z-20 p-3.5 px-4 rounded-2xl bg-[#17102c]/90 border border-purple-500/30 backdrop-blur-xl shadow-xl"
-            >
-              <span className="text-[10px] font-bold uppercase tracking-widest text-purple-300 block">
-                ML PREDICTION ACCURACY
+              <p className="text-[11px] text-slate-400 font-light mt-1">Students Protected</p>
+            </div>
+            <div className="p-4 rounded-2xl bg-[#17102c]/70 border border-purple-500/20 backdrop-blur-xl text-center">
+              <span className="text-2xl sm:text-3xl font-bold font-display text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">
+                12
               </span>
-              <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-xl font-bold font-display text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-300">
-                  94.8%
-                </span>
-              </div>
-              <p className="text-[10px] text-slate-400 font-light mt-0.5">KNN & Random Forest Models</p>
-            </motion.div>
+              <p className="text-[11px] text-slate-400 font-light mt-1">Monitored Departments</p>
+            </div>
+            <div className="p-4 rounded-2xl bg-[#17102c]/70 border border-purple-500/20 backdrop-blur-xl text-center">
+              <span className="text-2xl sm:text-3xl font-bold font-display text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
+                0%
+              </span>
+              <p className="text-[11px] text-slate-400 font-light mt-1">Target Dropout Goal</p>
+            </div>
+          </motion.div>
+
+          {/* Monitoring Status Badge */}
+          <div className="flex items-center gap-3 pt-2 text-xs text-slate-400">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-pink-500"></span>
+            </span>
+            <div>
+              <span className="text-pink-300 font-semibold uppercase tracking-wider">ACTIVE KPRCAS MONITORING</span>
+              <p className="text-slate-400 text-[11px]">Real-time ERP synchronization & automated alerts active</p>
+            </div>
           </div>
 
         </div>

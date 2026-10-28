@@ -58,6 +58,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("user", JSON.stringify(demo));
       localStorage.setItem("token", "demo-token-" + demo.id);
     } catch {}
+
+    // Asynchronously request real signed JWT token for the role
+    const apiBase = (import.meta.env.VITE_API_BASE as string) || (import.meta.env.MODE === "production" ? "/api" : "http://localhost:5001/api");
+    fetch(`${apiBase}/auth/demo-token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: demo.role }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.token) {
+          localStorage.setItem("token", data.token);
+        }
+      })
+      .catch(() => {});
   };
 
   const login = async (email: string, password: string): Promise<string | null> => {

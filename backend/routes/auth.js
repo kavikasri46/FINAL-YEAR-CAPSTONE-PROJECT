@@ -23,8 +23,10 @@ demoAccounts.forEach((acc) => {
 });
 
 router.post("/demo-token", (req, res) => {
-  const token = generateToken({ _id: "demo-admin", email: "admin@school.edu", role: "admin" });
-  res.json({ token, user: { id: "demo-admin", name: "Admin User", email: "admin@school.edu", role: "admin" } });
+  const role = (req.body?.role || req.query?.role || "admin").toLowerCase();
+  const demoFound = demoAccounts.find((d) => d.role.toLowerCase() === role) || demoAccounts[0];
+  const token = generateToken({ _id: demoFound.id, email: demoFound.email, role: demoFound.role, name: demoFound.name });
+  res.json({ token, user: { id: demoFound.id, name: demoFound.name, email: demoFound.email, role: demoFound.role } });
 });
 
 router.post("/register", async (req, res) => {

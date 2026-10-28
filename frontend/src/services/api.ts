@@ -8,27 +8,43 @@ function getToken(): string | null {
 
 async function ensureToken(): Promise<string> {
   let token = getToken();
-  if (token) return token;
+  if (token && !token.startsWith("demo-token-")) return token;
   try {
-    const res = await fetch(`${API_BASE}/auth/demo-token`, { method: "POST", headers: { "Content-Type": "application/json" } });
+    const res = await fetch(`${API_BASE}/auth/demo-token`, { 
+      method: "POST", 
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "admin" })
+    });
     if (res.ok) {
       const data = await res.json();
-      localStorage.setItem("token", data.token);
-      return data.token;
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        return data.token;
+      }
     }
   } catch {}
-  return "";
+  return token || "";
 }
 
 async function request(path: string, options: RequestInit = {}): Promise<any> {
-  const token = await ensureToken();
+  let token = await ensureToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string> || {}),
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  let res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  
+  if (res.status === 401 && !path.includes("/auth/")) {
+    localStorage.removeItem("token");
+    token = await ensureToken();
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+      res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+    }
+  }
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || `Request failed: ${res.status}`);
