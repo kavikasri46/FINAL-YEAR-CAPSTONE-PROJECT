@@ -71,6 +71,8 @@ export const api = {
   createSession: (data: any) => request("/sessions", { method: "POST", body: JSON.stringify(data) }),
   updateSession: (id: string, data: any) =>
     request(`/sessions/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteSession: (id: string) =>
+    request(`/sessions/${id}`, { method: "DELETE" }),
 
   // Timetable
   getTimetable: () => request("/timetable"),

@@ -13,7 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { UserRole } from "@/lib/types";
 
 const adminNav = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Students", url: "/students", icon: GraduationCap },
   { title: "Mentors", url: "/mentors", icon: UserCheck },
   { title: "Data Upload", url: "/upload", icon: Upload },
@@ -36,14 +36,14 @@ const adminERPNav = [
 ];
 
 const studentNav = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "My Performance", url: "/analytics", icon: BarChart3 },
   { title: "Sessions", url: "/sessions", icon: Calendar },
   { title: "Notifications", url: "/notifications", icon: Bell },
 ];
 
 const mentorNav = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "My Students", url: "/students", icon: GraduationCap },
   { title: "Sessions", url: "/sessions", icon: Calendar },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
@@ -51,7 +51,7 @@ const mentorNav = [
 ];
 
 const parentNav = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "My Alerts", url: "/parent-alerts", icon: AlertTriangle },
   { title: "Sessions", url: "/sessions", icon: Calendar },
   { title: "Notifications", url: "/notifications", icon: Bell },
@@ -71,15 +71,15 @@ export function AppSidebar() {
   return (
     <Sidebar className="border-r-0 sidebar-glow">
       <SidebarHeader className="p-4 border-b border-sidebar-border">
-        <div className="flex items-center gap-3">
-          <div className="h-11 w-11 rounded-xl gradient-primary flex items-center justify-center neon-outline">
+        <Link to="/dashboard" className="flex items-center gap-3 group">
+          <div className="h-11 w-11 rounded-xl gradient-primary flex items-center justify-center neon-outline group-hover:scale-105 transition-transform">
             <Shield className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <h2 className="font-display font-bold text-sm text-sidebar-primary-foreground">EduGuard</h2>
+            <h2 className="font-display font-bold text-sm text-sidebar-primary-foreground group-hover:text-pink-300 transition-colors">EduGuard</h2>
             <p className="text-[10px] text-sidebar-foreground/60 uppercase tracking-wider">Dropout Prevention</p>
           </div>
-        </div>
+        </Link>
       </SidebarHeader>
 
       <SidebarContent className="px-2 py-3">
@@ -109,7 +109,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      end={item.url === "/"}
+                      end={item.url === "/dashboard"}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/70 hover:text-sidebar-primary-foreground hover:bg-sidebar-accent transition-all text-sm"
                       activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-medium neon-item-active"
                     >
@@ -163,7 +163,7 @@ export function AppSidebar() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             {(["admin", "student", "mentor", "parent"] as UserRole[]).map(role => (
-              <DropdownMenuItem key={role} onClick={() => { switchRole(role); navigate("/"); }} className="capitalize">
+              <DropdownMenuItem key={role} onClick={() => { switchRole(role); navigate("/dashboard"); }} className="capitalize">
                 Switch to {role}
               </DropdownMenuItem>
             ))}

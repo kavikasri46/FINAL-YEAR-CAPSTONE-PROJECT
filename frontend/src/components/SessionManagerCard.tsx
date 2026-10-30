@@ -201,15 +201,21 @@ export function SessionManagerCard({ title = "Live Mentorship & Student Sessions
   };
 
   const handleDelete = async (id: string) => {
-    const updated = sessions.filter((s) => s._id !== id);
+    const updated = sessions.filter((s) => s._id !== id && (s as any).sessionId !== id);
     setSessions(updated);
     saveLocalSessions(updated);
+    broadcastSessionUpdate(updated);
 
     try {
-      await api.updateSession(id, { status: "cancelled" });
-    } catch {}
+      await api.deleteSession(id);
+    } catch (err: any) {
+      console.warn("Backend delete session failed, fallback status update:", err?.message);
+      try {
+        await api.updateSession(id, { status: "cancelled" });
+      } catch {}
+    }
 
-    showToast("Session removed.");
+    showToast("Session deleted entirely from system & student dashboard.");
   };
 
   return (

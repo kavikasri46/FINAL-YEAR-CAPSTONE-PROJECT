@@ -12,7 +12,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
-import { SessionItem, getLocalSessions, SESSIONS_UPDATE_EVENT } from "@/services/sessionSync";
+import { SessionItem, getLocalSessions, saveLocalSessions, SESSIONS_UPDATE_EVENT } from "@/services/sessionSync";
 
 interface LeaveRequest {
   id: string;
@@ -76,12 +76,15 @@ export default function StudentDashboard() {
   const fetchLiveSessions = async () => {
     try {
       const data = await api.getSessions();
-      if (Array.isArray(data) && data.length > 0) {
-        setSessions(data);
+      if (Array.isArray(data)) {
+        const active = data.filter((s: SessionItem) => s.status !== "cancelled");
+        setSessions(active);
+        saveLocalSessions(active);
         return;
       }
     } catch {}
-    setSessions(getLocalSessions());
+    const local = getLocalSessions();
+    setSessions(local.filter((s: SessionItem) => s.status !== "cancelled"));
   };
 
   useEffect(() => {
@@ -92,11 +95,13 @@ export default function StudentDashboard() {
     const handleSessionsUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<SessionItem[]>;
       if (customEvent.detail && Array.isArray(customEvent.detail)) {
-        setSessions(customEvent.detail);
+        const active = customEvent.detail.filter((s: SessionItem) => s.status !== "cancelled");
+        setSessions(active);
         setLiveAlert("🔔 Sessions updated live by Faculty / Admin!");
         setTimeout(() => setLiveAlert(null), 4000);
       } else {
-        setSessions(getLocalSessions());
+        const fresh = getLocalSessions().filter((s: SessionItem) => s.status !== "cancelled");
+        setSessions(fresh);
       }
     };
 
@@ -105,7 +110,7 @@ export default function StudentDashboard() {
 
     // Live polling every 3.5 seconds
     const interval = setInterval(() => {
-      const fresh = getLocalSessions();
+      const fresh = getLocalSessions().filter((s: SessionItem) => s.status !== "cancelled");
       setSessions(fresh);
     }, 3500);
 

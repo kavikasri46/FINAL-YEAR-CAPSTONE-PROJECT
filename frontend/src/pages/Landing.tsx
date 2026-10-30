@@ -56,7 +56,7 @@ interface ModuleItem {
 export default function Landing() {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
-  const portalDestination = user || isAuthenticated ? "/dashboard" : "/auth?mode=login";
+  const portalDestination = "/auth?mode=login";
 
   // Contact form state
   const [name, setName] = useState("");
@@ -447,10 +447,10 @@ export default function Landing() {
             </div>
             
             <Link
-              to={portalDestination}
+              to="/auth?mode=login"
               className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-semibold text-purple-300 hover:text-pink-300 group transition-colors"
             >
-              {user || isAuthenticated ? "Open Faculty Dashboard" : "Access Faculty Modules"}
+              Access Faculty Modules
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -501,9 +501,17 @@ export default function Landing() {
                 <div className="relative z-10 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono text-purple-400 font-bold">{mod.number}</span>
-                    <div className="h-8 w-8 rounded-full bg-purple-900/40 border border-purple-500/30 flex items-center justify-center text-slate-300 group-hover:text-pink-300 group-hover:border-pink-500/60 group-hover:scale-110 transition-all">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(portalDestination);
+                      }}
+                      title="Enter Dashboard"
+                      className="h-8 w-8 rounded-full bg-purple-900/40 border border-purple-500/30 flex items-center justify-center text-slate-300 group-hover:text-pink-300 group-hover:border-pink-500/60 group-hover:scale-110 transition-all"
+                    >
                       <ArrowUpRight className="h-4 w-4" />
-                    </div>
+                    </button>
                   </div>
 
                   <h3 className="text-xl font-display font-bold text-white group-hover:text-pink-200 transition-colors">
@@ -719,7 +727,7 @@ export default function Landing() {
             </div>
             
             <Link
-              to="/auth"
+              to="/auth?mode=login"
               className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-semibold text-purple-300 hover:text-pink-300 group transition-colors"
             >
               Sign In to View All Reports
@@ -938,7 +946,7 @@ export default function Landing() {
             <a href="#modules" className="hover:text-pink-400 transition-colors">AI Modules</a>
             <a href="#capabilities" className="hover:text-pink-400 transition-colors">Features</a>
             <a href="#process" className="hover:text-pink-400 transition-colors">Intervention</a>
-            <Link to="/auth" className="text-purple-400 hover:text-pink-300 transition-colors">Faculty Login</Link>
+            <Link to="/auth?mode=login" className="text-purple-400 hover:text-pink-300 transition-colors">Faculty Login</Link>
           </div>
 
           <p className="text-[11px] text-slate-500">
@@ -1005,11 +1013,11 @@ export default function Landing() {
                 </div>
 
                 <Link
-                  to="/auth"
+                  to="/auth?mode=login"
                   onClick={() => setSelectedModule(null)}
-                  className="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-gradient-to-r from-pink-500 to-purple-600 text-white flex items-center justify-center"
+                  className="px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white flex items-center justify-center shadow-lg shadow-pink-500/25 hover:scale-105 transition-all"
                 >
-                  Open in Portal ➔
+                  Login to Enter Dashboard ➔
                 </Link>
               </div>
             </motion.div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate, Link, useSearchParams } from "react-router-dom";
+import { Navigate, Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,8 @@ const roles: { value: UserRole; label: string; icon: typeof GraduationCap; desc:
 ];
 
 export default function Auth() {
-  const { login, register, loginAsDemo, isAuthenticated } = useAuth();
+  const { user, login, register, loginAsDemo, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const paramMode = searchParams.get("mode");
   const [mode, setMode] = useState<"login" | "register">(paramMode === "register" ? "register" : "login");
@@ -40,11 +41,10 @@ export default function Auth() {
   const [successMsg, setSuccessMsg] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
-
   const handleDemoLogin = (role: UserRole) => {
     setSelectedRole(role);
     loginAsDemo(role);
+    navigate("/dashboard");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,15 +63,21 @@ export default function Auth() {
         if (err) {
           setError(err);
         } else {
-          setSuccessMsg("Account created successfully! Please sign in.");
-          setMode("login");
-          setName("");
-          setPassword("");
-          setConfirmPassword("");
+          setSuccessMsg("Account created successfully! Logging you in...");
+          const loginErr = await login(email, password);
+          if (!loginErr) {
+            navigate("/dashboard");
+          } else {
+            setMode("login");
+          }
         }
       } else {
         const err = await login(email, password);
-        if (err) setError(err);
+        if (err) {
+          setError(err);
+        } else {
+          navigate("/dashboard");
+        }
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -217,6 +223,29 @@ export default function Auth() {
                 </p>
               </motion.div>
             </AnimatePresence>
+
+            {isAuthenticated && user && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-5 p-3.5 rounded-xl bg-purple-950/70 border border-pink-500/30 flex items-center justify-between text-xs backdrop-blur-md shadow-md"
+              >
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider font-mono block">Active Session</span>
+                  <p className="text-white font-semibold flex items-center gap-1.5">
+                    {user.name} <span className="text-pink-300 uppercase font-mono text-[10px]">({user.role})</span>
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => navigate("/dashboard")}
+                  className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-bold text-xs px-3.5 py-1.5 h-auto rounded-lg shadow-md"
+                >
+                  Enter Dashboard ➔
+                </Button>
+              </motion.div>
+            )}
 
             {error && (
               <motion.div

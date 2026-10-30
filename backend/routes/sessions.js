@@ -57,12 +57,18 @@ const isDbConnected = () => mongoose.connection.readyState === 1;
 router.get("/", verifyToken, async (req, res) => {
   try {
     if (isDbConnected()) {
-      let filter = {};
+      let filter = { status: { $ne: "cancelled" } };
       if (req.user.role === "student") {
-        // Students see sessions assigned to them OR general public sessions
-        filter = { $or: [{ assignedTo: req.user.id }, { assignedTo: { $size: 0 } }, { type: "group" }] };
+        // Students see non-cancelled sessions assigned to them OR general public sessions
+        filter = {
+          status: { $ne: "cancelled" },
+          $or: [{ assignedTo: req.user.id }, { assignedTo: { $size: 0 } }, { type: "group" }, { type: "mentor-student" }],
+        };
       } else if (req.user.role === "mentor") {
-        filter = { $or: [{ createdBy: req.user.id }, { createdBy: "admin" }, { type: "group" }] };
+        filter = {
+          status: { $ne: "cancelled" },
+          $or: [{ createdBy: req.user.id }, { createdBy: "admin" }, { type: "group" }],
+        };
       }
       const dbSessions = await Session.find(filter).sort({ createdAt: -1 }).lean();
       return res.json(dbSessions);
@@ -72,14 +78,15 @@ router.get("/", verifyToken, async (req, res) => {
   }
 
   // Fallback to in-memory store
+  const activeSessions = inMemorySessions.filter((s) => s.status !== "cancelled");
   if (req.user.role === "student") {
-    const studentSessions = inMemorySessions.filter(
-      (s) => !s.assignedTo || s.assignedTo.length === 0 || s.assignedTo.includes(req.user.id) || s.type === "group"
+    const studentSessions = activeSessions.filter(
+      (s) => !s.assignedTo || s.assignedTo.length === 0 || s.assignedTo.includes(req.user.id) || s.type === "group" || s.type === "mentor-student"
     );
-    return res.json(studentSessions.length > 0 ? studentSessions : inMemorySessions);
+    return res.json(studentSessions);
   }
 
-  res.json(inMemorySessions);
+  res.json(activeSessions);
 });
 
 // POST /api/sessions - Only ADMIN and MENTOR can create sessions
@@ -185,17 +192,23 @@ router.delete("/:id", verifyToken, async (req, res) => {
     const { id } = req.params;
     if (isDbConnected()) {
       try {
+        const deleteConditions = [];
         if (mongoose.Types.ObjectId.isValid(id) && id.length === 24) {
-          await Session.findByIdAndDelete(id);
-        } else {
-          await Session.findOneAndDelete({ $or: [{ sessionId: id }, { title: id }] });
+          deleteConditions.push({ _id: new mongoose.Types.ObjectId(id) });
         }
+        deleteConditions.push({ _id: id });
+        deleteConditions.push({ sessionId: id });
+        deleteConditions.push({ title: id });
+
+        await Session.deleteMany({ $or: deleteConditions });
       } catch (dbErr) {
         console.warn("MongoDB delete session fallback:", dbErr.message);
       }
     }
-    inMemorySessions = inMemorySessions.filter((s) => s._id !== id && s._id?.toString() !== id && s.sessionId !== id);
-    res.json({ message: "Session deleted successfully" });
+    inMemorySessions = inMemorySessions.filter(
+      (s) => s._id !== id && s._id?.toString() !== id && s.sessionId !== id
+    );
+    res.json({ success: true, message: "Session deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

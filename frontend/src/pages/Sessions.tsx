@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { saveLocalSessions, broadcastSessionUpdate } from "@/services/sessionSync";
 
 const statusStyles: Record<string, string> = {
   scheduled: "bg-blue-500/10 text-blue-400 border-blue-500/30",
@@ -300,13 +301,18 @@ export default function Sessions() {
 
   const handleDeleteSession = async (id: string) => {
     if (!canManageSessions) return;
-    const updatedList = sessions.filter((s) => s._id !== id);
+    const updatedList = sessions.filter((s) => s._id !== id && (s as any).sessionId !== id);
     setSessions(updatedList);
-    localStorage.setItem("app_sessions", JSON.stringify(updatedList));
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("app_sessions_updated", { detail: updatedList }));
+    saveLocalSessions(updatedList);
+    broadcastSessionUpdate(updatedList);
+
+    try {
+      await api.deleteSession(id);
+    } catch (err: any) {
+      console.warn("Backend delete session failed:", err?.message);
     }
-    showNotify("Session removed.");
+
+    showNotify("Session deleted entirely from system & student dashboard.");
   };
 
   const handleDocumentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

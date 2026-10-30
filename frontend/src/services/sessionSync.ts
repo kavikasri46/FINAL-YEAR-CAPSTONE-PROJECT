@@ -63,9 +63,9 @@ export const DEFAULT_INITIAL_SESSIONS: SessionItem[] = [
 export function getLocalSessions(): SessionItem[] {
   try {
     const raw = localStorage.getItem("app_sessions");
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) return parsed;
     }
   } catch {}
   return DEFAULT_INITIAL_SESSIONS;
