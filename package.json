@@ -7,6 +7,7 @@
     "build": "cd frontend && npm install --include=dev && npm run build",
     "dev:frontend": "npm run dev --prefix frontend",
     "dev:backend": "npm run dev --prefix backend",
+    "seed:backend": "npm run seed --prefix backend",
     "start:backend": "npm run start --prefix backend",
     "build:frontend": "npm run build --prefix frontend"
   },

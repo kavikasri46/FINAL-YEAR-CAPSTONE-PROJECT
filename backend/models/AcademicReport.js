@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const academicReportSchema = new mongoose.Schema(
   {
-    studentId: { type: String, required: true, unique: true, index: true },
+    studentId: { type: String, required: true, unique: true },
     studentName: { type: String },
     overallScore: { type: Number, default: 0 },
     attendanceScore: { type: Number, default: 0 },

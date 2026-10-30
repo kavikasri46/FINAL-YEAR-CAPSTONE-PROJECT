@@ -22,11 +22,29 @@ demoAccounts.forEach((acc) => {
   memoryUsers.set(acc.email.toLowerCase(), acc);
 });
 
-router.post("/demo-token", (req, res) => {
+router.post("/demo-token", async (req, res) => {
   const role = (req.body?.role || req.query?.role || "admin").toLowerCase();
-  const demoFound = demoAccounts.find((d) => d.role.toLowerCase() === role) || demoAccounts[0];
-  const token = generateToken({ _id: demoFound.id, email: demoFound.email, role: demoFound.role, name: demoFound.name });
-  res.json({ token, user: { id: demoFound.id, name: demoFound.name, email: demoFound.email, role: demoFound.role } });
+  let user = null;
+  if (isMongoConnected()) {
+    try {
+      user = await User.findOne({ role }).lean();
+      if (!user) {
+        const demoFound = demoAccounts.find((d) => d.role.toLowerCase() === role) || demoAccounts[0];
+        user = await User.create({
+          name: demoFound.name,
+          email: demoFound.email,
+          password: demoFound.password,
+          role: demoFound.role,
+        });
+      }
+    } catch {}
+  }
+  if (!user) {
+    user = demoAccounts.find((d) => d.role.toLowerCase() === role) || demoAccounts[0];
+  }
+  const userId = (user._id || user.id).toString();
+  const token = generateToken({ _id: userId, email: user.email, role: user.role, name: user.name });
+  res.json({ token, user: { id: userId, name: user.name, email: user.email, role: user.role } });
 });
 
 router.post("/register", async (req, res) => {

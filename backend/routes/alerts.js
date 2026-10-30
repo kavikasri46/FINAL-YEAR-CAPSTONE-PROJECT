@@ -15,7 +15,7 @@ router.get("/", verifyToken, async (req, res) => {
   try {
     if (isMongoConnected()) {
       const alerts = await ParentAlert.find().sort({ createdAt: -1 }).maxTimeMS(2500);
-      if (alerts && alerts.length > 0) return res.json(alerts);
+      return res.json(alerts);
     }
   } catch (err) {
     console.warn("MongoDB alerts notice:", err.message);
@@ -67,6 +67,19 @@ router.put("/:id", verifyToken, async (req, res) => {
     return res.json(memAlerts[idx]);
   }
   res.json({ _id: req.params.id, ...req.body });
+});
+
+router.delete("/:id", verifyToken, async (req, res) => {
+  try {
+    if (isMongoConnected()) {
+      await ParentAlert.findByIdAndDelete(req.params.id);
+      return res.json({ message: "Alert deleted from MongoDB" });
+    }
+  } catch (err) {
+    console.warn("MongoDB delete alert notice:", err.message);
+  }
+  memAlerts = memAlerts.filter(a => a._id !== req.params.id);
+  res.json({ message: "Alert deleted" });
 });
 
 export default router;

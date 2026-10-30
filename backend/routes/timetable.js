@@ -16,12 +16,56 @@ router.get("/", verifyToken, async (req, res) => {
   try {
     if (isMongoConnected()) {
       const entries = await Timetable.find().sort({ createdAt: -1 }).maxTimeMS(2500);
-      if (entries && entries.length > 0) return res.json(entries);
+      return res.json(entries);
     }
   } catch (err) {
     console.warn("MongoDB timetable notice:", err.message);
   }
   res.json(memTimetable);
+});
+
+router.post("/", verifyToken, async (req, res) => {
+  try {
+    if (isMongoConnected()) {
+      const entry = await Timetable.create(req.body);
+      return res.status(201).json(entry);
+    }
+  } catch (err) {
+    console.warn("MongoDB create timetable notice:", err.message);
+  }
+  const fallback = { _id: "t_" + Date.now(), ...req.body };
+  memTimetable.unshift(fallback);
+  res.status(201).json(fallback);
+});
+
+router.put("/:id", verifyToken, async (req, res) => {
+  try {
+    if (isMongoConnected()) {
+      const updated = await Timetable.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      if (updated) return res.json(updated);
+    }
+  } catch (err) {
+    console.warn("MongoDB update timetable notice:", err.message);
+  }
+  const idx = memTimetable.findIndex(t => t._id === req.params.id);
+  if (idx >= 0) {
+    memTimetable[idx] = { ...memTimetable[idx], ...req.body };
+    return res.json(memTimetable[idx]);
+  }
+  res.json({ _id: req.params.id, ...req.body });
+});
+
+router.delete("/:id", verifyToken, async (req, res) => {
+  try {
+    if (isMongoConnected()) {
+      await Timetable.findByIdAndDelete(req.params.id);
+      return res.json({ message: "Timetable entry deleted from MongoDB" });
+    }
+  } catch (err) {
+    console.warn("MongoDB delete timetable notice:", err.message);
+  }
+  memTimetable = memTimetable.filter(t => t._id !== req.params.id);
+  res.json({ message: "Timetable entry deleted" });
 });
 
 router.post("/bulk", verifyToken, async (req, res) => {

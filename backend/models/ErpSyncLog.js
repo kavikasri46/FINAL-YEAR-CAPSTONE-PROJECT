@@ -25,7 +25,7 @@ const erpSyncLogSchema = new mongoose.Schema(
     },
     errors: [{ type: String }],
   },
-  { timestamps: true }
+  { timestamps: true, suppressReservedKeysWarning: true }
 );
 
 export default mongoose.model("ErpSyncLog", erpSyncLogSchema, "erpSyncLogs");

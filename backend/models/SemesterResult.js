@@ -16,7 +16,7 @@ const subjectResultSchema = new mongoose.Schema(
 
 const semesterResultSchema = new mongoose.Schema(
   {
-    studentId: { type: String, required: true, index: true },
+    studentId: { type: String, required: true },
     subjects: [subjectResultSchema],
     gpa: { type: Number, default: 0 },
     cgpa: { type: Number, default: 0 },

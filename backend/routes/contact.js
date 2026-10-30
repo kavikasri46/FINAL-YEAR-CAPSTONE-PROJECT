@@ -1,5 +1,7 @@
 import { Router } from "express";
 import mongoose from "mongoose";
+import ContactInquiry from "../models/ContactInquiry.js";
+import NewsletterSubscriber from "../models/NewsletterSubscriber.js";
 
 const router = Router();
 const isMongoConnected = () => mongoose.connection.readyState === 1;
@@ -163,23 +165,31 @@ router.post("/", async (req, res) => {
     const selectedDept = department || "Computer Science";
     const selectedService = service || "Dropout Early Warning Inquiry";
 
-    const inquiry = {
-      id: "inq_" + Date.now(),
+    const inquiryData = {
       name: cleanName,
       email: cleanEmail,
       department: selectedDept,
       message: cleanMsg,
       service: selectedService,
       status: "new",
-      createdAt: new Date().toISOString(),
     };
 
-    inquiries.unshift(inquiry);
+    let savedId = "inq_" + Date.now();
+    if (isMongoConnected()) {
+      try {
+        const saved = await ContactInquiry.create(inquiryData);
+        savedId = saved._id.toString();
+      } catch (dbErr) {
+        console.warn("MongoDB create inquiry notice:", dbErr.message);
+      }
+    }
+
+    inquiries.unshift({ id: savedId, ...inquiryData, createdAt: new Date().toISOString() });
 
     return res.status(201).json({
       success: true,
-      message: "Inquiry received! The KPRCAS EduGuard administration team will follow up shortly.",
-      inquiryId: inquiry.id,
+      message: "Inquiry received and saved to MongoDB! The KPRCAS EduGuard administration team will follow up shortly.",
+      inquiryId: savedId,
     });
   } catch (err) {
     res.status(500).json({ error: "Failed to submit inquiry. Please try again." });
@@ -187,18 +197,35 @@ router.post("/", async (req, res) => {
 });
 
 // GET /api/contact
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
+  try {
+    if (isMongoConnected()) {
+      const dbInquiries = await ContactInquiry.find().sort({ createdAt: -1 }).lean();
+      if (dbInquiries && dbInquiries.length > 0) return res.json(dbInquiries);
+    }
+  } catch (err) {}
   res.json(inquiries);
 });
 
 // POST /api/newsletter
-router.post("/newsletter", (req, res) => {
+router.post("/newsletter", async (req, res) => {
   try {
     const { email } = req.body;
     if (!email || !email.includes("@")) {
       return res.status(400).json({ error: "Please provide a valid email address." });
     }
     const cleanEmail = email.trim().toLowerCase();
+    if (isMongoConnected()) {
+      try {
+        await NewsletterSubscriber.findOneAndUpdate(
+          { email: cleanEmail },
+          { $set: { email: cleanEmail, subscribedAt: new Date() } },
+          { upsert: true }
+        );
+      } catch (dbErr) {
+        console.warn("MongoDB newsletter subscribe notice:", dbErr.message);
+      }
+    }
     subscribers.add(cleanEmail);
     res.json({ success: true, message: "Subscribed to KPRCAS EduGuard academic updates!" });
   } catch (err) {

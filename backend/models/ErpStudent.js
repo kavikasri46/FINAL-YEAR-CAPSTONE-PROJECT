@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const erpStudentSchema = new mongoose.Schema(
   {
-    studentId: { type: String, required: true, unique: true, index: true },
+    studentId: { type: String, required: true, unique: true },
     registerNo: { type: String, required: true, unique: true },
     rollNo: { type: String, required: true, unique: true },
     name: { type: String, required: true },

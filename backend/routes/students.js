@@ -18,12 +18,54 @@ router.get("/", verifyToken, async (req, res) => {
       const filter = {};
       if (req.user.role === "mentor") filter.mentor_id = req.user.id;
       const students = await Student.find(filter).sort({ risk_score: -1 }).maxTimeMS(2500);
-      if (students && students.length > 0) return res.json(students);
+      return res.json(students);
     }
   } catch (err) {
     console.warn("MongoDB student fetch notice:", err.message);
   }
   res.json(memStudents);
+});
+
+router.get("/:id", verifyToken, async (req, res) => {
+  try {
+    if (isMongoConnected()) {
+      const student = await Student.findById(req.params.id);
+      if (student) return res.json(student);
+    }
+  } catch (err) {}
+  const found = memStudents.find((s) => s.id === req.params.id || s._id === req.params.id);
+  if (found) return res.json(found);
+  res.status(404).json({ error: "Student not found" });
+});
+
+router.put("/:id", verifyToken, async (req, res) => {
+  try {
+    if (isMongoConnected()) {
+      const updated = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      if (updated) return res.json(updated);
+    }
+  } catch (err) {
+    console.warn("MongoDB update student notice:", err.message);
+  }
+  const idx = memStudents.findIndex((s) => s.id === req.params.id || s._id === req.params.id);
+  if (idx >= 0) {
+    memStudents[idx] = { ...memStudents[idx], ...req.body };
+    return res.json(memStudents[idx]);
+  }
+  res.json({ id: req.params.id, ...req.body });
+});
+
+router.delete("/:id", verifyToken, async (req, res) => {
+  try {
+    if (isMongoConnected()) {
+      await Student.findByIdAndDelete(req.params.id);
+      return res.json({ message: "Student deleted from MongoDB" });
+    }
+  } catch (err) {
+    console.warn("MongoDB delete student notice:", err.message);
+  }
+  memStudents = memStudents.filter((s) => s.id !== req.params.id && s._id !== req.params.id);
+  res.json({ message: "Student deleted" });
 });
 
 router.post("/", verifyToken, async (req, res) => {

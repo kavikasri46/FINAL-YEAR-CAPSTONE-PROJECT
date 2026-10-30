@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const internalMarksSchema = new mongoose.Schema(
   {
-    studentId: { type: String, required: true, index: true },
+    studentId: { type: String, required: true },
     subjectName: { type: String, required: true },
     cia1: { type: Number, default: 0 },
     cia2: { type: Number, default: 0 },

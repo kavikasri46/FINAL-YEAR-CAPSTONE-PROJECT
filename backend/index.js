@@ -1,3 +1,4 @@
+try { process.loadEnvFile?.(); } catch {}
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
@@ -12,7 +13,7 @@ import contactRoutes from "./routes/contact.js";
 
 const app = express();
 const PORT = process.env.PORT || 5001;
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://kavikasri46_db_user:ZbiAkbNFwAyIahbX@cluster0.ulib1zn.mongodb.net/eduguard?retryWrites=true&w=majority";
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://kavikasri46_db_user:Kavika246@cluster0.ulib1zn.mongodb.net/eduguard?retryWrites=true&w=majority";
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));

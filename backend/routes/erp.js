@@ -247,29 +247,59 @@ async function dbOrMemUpsert(collection, filter, data) {
 // FAKE ERP ENDPOINTS (no auth needed)
 // ─────────────────────────────────────────────────────────────────────────────
 
-router.get("/fake-erp/students", (req, res) => {
-  const data = generateStudentsList();
+router.get("/fake-erp/students", async (req, res) => {
+  let data = [];
+  if (isMongoConnected()) {
+    try {
+      data = await ErpStudent.find().lean();
+    } catch {}
+  }
+  if (!data || data.length === 0) data = generateStudentsList();
   res.json({ success: true, count: data.length, data });
 });
 
-router.get("/fake-erp/attendance", (req, res) => {
-  const list = generateStudentsList();
-  const data = list.map((s) => generateAttendanceForStudent(s.studentId));
+router.get("/fake-erp/attendance", async (req, res) => {
+  let data = [];
+  if (isMongoConnected()) {
+    try {
+      data = await Attendance.find().lean();
+    } catch {}
+  }
+  if (!data || data.length === 0) {
+    const list = generateStudentsList();
+    data = list.map((s) => generateAttendanceForStudent(s.studentId));
+  }
   res.json({ success: true, count: data.length, data });
 });
 
-router.get("/fake-erp/internalmarks", (req, res) => {
-  const list = generateStudentsList();
-  const data = list.flatMap((s) => generateInternalMarksForStudent(s.studentId));
+router.get("/fake-erp/internalmarks", async (req, res) => {
+  let data = [];
+  if (isMongoConnected()) {
+    try {
+      data = await InternalMarks.find().lean();
+    } catch {}
+  }
+  if (!data || data.length === 0) {
+    const list = generateStudentsList();
+    data = list.flatMap((s) => generateInternalMarksForStudent(s.studentId));
+  }
   res.json({ success: true, count: data.length, data });
 });
 
-router.get("/fake-erp/semesterresults", (req, res) => {
-  const list = generateStudentsList();
-  const data = list.map((s) => {
-    const marks = generateInternalMarksForStudent(s.studentId);
-    return generateSemesterResultForStudent(s.studentId, marks);
-  });
+router.get("/fake-erp/semesterresults", async (req, res) => {
+  let data = [];
+  if (isMongoConnected()) {
+    try {
+      data = await SemesterResult.find().lean();
+    } catch {}
+  }
+  if (!data || data.length === 0) {
+    const list = generateStudentsList();
+    data = list.map((s) => {
+      const marks = generateInternalMarksForStudent(s.studentId);
+      return generateSemesterResultForStudent(s.studentId, marks);
+    });
+  }
   res.json({ success: true, count: data.length, data });
 });
 
@@ -278,18 +308,34 @@ router.get("/fake-erp/subjects", (req, res) => {
   res.json({ success: true, count: data.length, data });
 });
 
-router.get("/fake-erp/internal-marks", (req, res) => {
-  const list = generateStudentsList();
-  const data = list.flatMap((s) => generateInternalMarksForStudent(s.studentId));
+router.get("/fake-erp/internal-marks", async (req, res) => {
+  let data = [];
+  if (isMongoConnected()) {
+    try {
+      data = await InternalMarks.find().lean();
+    } catch {}
+  }
+  if (!data || data.length === 0) {
+    const list = generateStudentsList();
+    data = list.flatMap((s) => generateInternalMarksForStudent(s.studentId));
+  }
   res.json({ success: true, count: data.length, data });
 });
 
-router.get("/fake-erp/semester-results", (req, res) => {
-  const list = generateStudentsList();
-  const data = list.map((s) => {
-    const marks = generateInternalMarksForStudent(s.studentId);
-    return generateSemesterResultForStudent(s.studentId, marks);
-  });
+router.get("/fake-erp/semester-results", async (req, res) => {
+  let data = [];
+  if (isMongoConnected()) {
+    try {
+      data = await SemesterResult.find().lean();
+    } catch {}
+  }
+  if (!data || data.length === 0) {
+    const list = generateStudentsList();
+    data = list.map((s) => {
+      const marks = generateInternalMarksForStudent(s.studentId);
+      return generateSemesterResultForStudent(s.studentId, marks);
+    });
+  }
   res.json({ success: true, count: data.length, data });
 });
 
@@ -466,13 +512,22 @@ router.get("/erp/dashboard", verifyToken, async (req, res) => {
     const highRiskCount = (await dbOrMemfind("students")).filter((s) => ["High", "Critical"].includes(s.riskLevel)).length;
     const top10 = reports.slice().sort((a, b) => b.overallScore - a.overallScore).slice(0, 10);
     const lowPerf = reports.slice().sort((a, b) => a.overallScore - b.overallScore).slice(0, 10);
-    const lastLog = mem.logs[0] || null;
-
-    const syncedToday = mem.logs.filter((l) => {
-      const d = new Date(l.startTime);
-      const now = new Date();
-      return d.toDateString() === now.toDateString();
-    }).length;
+    let lastLog = mem.logs[0] || null;
+    let syncedToday = 0;
+    if (isMongoConnected()) {
+      try {
+        lastLog = (await ErpSyncLog.findOne().sort({ createdAt: -1 }).lean()) || lastLog;
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        syncedToday = await ErpSyncLog.countDocuments({ startTime: { $gte: startOfDay } });
+      } catch {}
+    } else {
+      syncedToday = mem.logs.filter((l) => {
+        const d = new Date(l.startTime);
+        const now = new Date();
+        return d.toDateString() === now.toDateString();
+      }).length;
+    }
 
     res.json({
       success: true,

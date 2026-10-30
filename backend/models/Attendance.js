@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const attendanceSchema = new mongoose.Schema(
   {
-    studentId: { type: String, required: true, index: true },
+    studentId: { type: String, required: true },
     workingDays: { type: Number, default: 0 },
     presentDays: { type: Number, default: 0 },
     absentDays: { type: Number, default: 0 },

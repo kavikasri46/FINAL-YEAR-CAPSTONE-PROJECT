@@ -65,9 +65,7 @@ router.get("/", verifyToken, async (req, res) => {
         filter = { $or: [{ createdBy: req.user.id }, { createdBy: "admin" }, { type: "group" }] };
       }
       const dbSessions = await Session.find(filter).sort({ createdAt: -1 }).lean();
-      if (dbSessions && dbSessions.length > 0) {
-        return res.json(dbSessions);
-      }
+      return res.json(dbSessions);
     }
   } catch (dbErr) {
     console.warn("MongoDB fetch sessions warning (falling back to memory):", dbErr.message);

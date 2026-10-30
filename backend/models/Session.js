@@ -6,10 +6,11 @@ const sessionSchema = new mongoose.Schema({
   date: { type: String },
   time: { type: String },
   youtubeUrl: { type: String },
-  type: { type: String, enum: ["mentor-student", "mentor-parent", "group"], default: "mentor-student" },
+  type: { type: String, default: "mentor-student" },
   status: { type: String, enum: ["scheduled", "completed", "cancelled"], default: "scheduled" },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  assignedTo: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  createdBy: { type: String },
+  createdByName: { type: String },
+  assignedTo: [{ type: String }],
 }, { timestamps: true });
 
 export default mongoose.model("Session", sessionSchema);
