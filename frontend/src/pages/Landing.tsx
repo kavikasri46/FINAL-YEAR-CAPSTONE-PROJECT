@@ -27,13 +27,17 @@ import {
   BarChart3,
   Calendar,
   Bell,
-  BookOpen
+  BookOpen,
+  LogIn,
+  UserPlus
 } from "lucide-react";
 import { api } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 import kprLogo from "@/images/kpr logo.jpg";
 import portalArch from "@/images/portal_arch.jpg";
 import ThreeDBookAnalysis from "@/components/ThreeDBookAnalysis";
+import AIPredictionAnimation from "@/components/AIPredictionAnimation";
+import CollegeCampusShowcase from "@/components/CollegeCampusShowcase";
 
 interface ModuleItem {
   id: string;
@@ -51,7 +55,8 @@ interface ModuleItem {
 
 export default function Landing() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const portalDestination = user || isAuthenticated ? "/dashboard" : "/auth?mode=login";
 
   // Contact form state
   const [name, setName] = useState("");
@@ -61,31 +66,6 @@ export default function Landing() {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formStatus, setFormStatus] = useState<{ type: "success" | "error"; text: string } | null>(null);
-
-  // Live Interactive Risk Calculator Widget state
-  const [calcAttendance, setCalcAttendance] = useState(68);
-  const [calcMarks, setCalcMarks] = useState(45);
-  const [calcArrears, setCalcArrears] = useState(1);
-
-  // Calculate dynamic simulated risk score
-  const computedRisk = Math.min(
-    100,
-    Math.max(
-      5,
-      Math.round(
-        (100 - calcAttendance) * 0.55 +
-        (100 - calcMarks) * 0.35 +
-        calcArrears * 10
-      )
-    )
-  );
-
-  const riskTier =
-    computedRisk >= 70
-      ? { label: "High Risk (Critical)", color: "text-red-400", bg: "bg-red-950/60 border-red-500/40", action: "Immediate Mentor & Parent SMS Required" }
-      : computedRisk >= 40
-      ? { label: "Medium Risk (Moderate)", color: "text-amber-400", bg: "bg-amber-950/60 border-amber-500/40", action: "Scheduled Counseling & Revision Support" }
-      : { label: "Low Risk (Safe)", color: "text-emerald-400", bg: "bg-emerald-950/60 border-emerald-500/40", action: "Optimal Performance & Regular Tracking" };
 
   // Selected module modal
   const [selectedModule, setSelectedModule] = useState<ModuleItem | null>(null);
@@ -298,31 +278,22 @@ export default function Landing() {
             </a>
           </nav>
 
-          {/* Action / Launch Portal */}
-          <div className="flex items-center gap-3">
-            {user ? (
-              <Link
-                to="/dashboard"
-                className="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-300 flex items-center gap-2"
-              >
-                <Zap className="h-3.5 w-3.5 fill-current" /> Open Dashboard
-              </Link>
-            ) : (
-              <>
-                <Link
-                  to="/auth"
-                  className="hidden sm:inline-flex px-4 py-2 rounded-full text-xs font-medium text-slate-300 hover:text-white hover:bg-white/5 border border-purple-500/25 transition-all duration-200"
-                >
-                  Faculty Sign In
-                </Link>
-                <Link
-                  to="/auth"
-                  className="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-gradient-to-r from-purple-600 via-pink-600 to-pink-500 hover:opacity-90 text-white shadow-lg shadow-pink-500/20 hover:shadow-pink-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border border-pink-400/30 flex items-center gap-1.5"
-                >
-                  <GraduationCap className="h-3.5 w-3.5" /> Launch Portal
-                </Link>
-              </>
-            )}
+          {/* Action / Auth Buttons */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              to="/auth?mode=login"
+              className="px-4 py-2 sm:px-4.5 sm:py-2 rounded-full text-xs font-semibold tracking-wider uppercase text-slate-200 hover:text-white bg-purple-950/60 hover:bg-purple-900/60 border border-purple-500/30 hover:border-pink-500/50 backdrop-blur-md shadow-md transition-all duration-200 flex items-center gap-1.5"
+            >
+              <LogIn className="h-3.5 w-3.5 text-pink-400" />
+              <span>Login</span>
+            </Link>
+            <Link
+              to="/auth?mode=register"
+              className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-400 hover:to-indigo-500 text-white shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-105 active:scale-95 transition-all duration-300 border border-pink-400/30 flex items-center gap-1.5"
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              <span>Register</span>
+            </Link>
           </div>
         </div>
       </header>
@@ -376,19 +347,20 @@ export default function Landing() {
             className="flex flex-wrap items-center justify-center gap-4 pt-2"
           >
             <Link
-              to="/auth"
+              to="/auth?mode=login"
               className="px-8 py-3.5 rounded-full text-sm font-semibold tracking-wide uppercase bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-400 hover:to-indigo-500 text-white shadow-xl shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2 group"
             >
-              Launch EduGuard Portal
+              <LogIn className="h-4 w-4" />
+              Sign In to Access Dashboard
               <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </Link>
 
-            <a
-              href="#calculator"
-              className="px-7 py-3.5 rounded-full text-sm font-medium tracking-wide uppercase bg-[#140f26]/80 hover:bg-[#1c1536] text-slate-200 border border-purple-500/25 hover:border-purple-400/50 backdrop-blur-md transition-all duration-300 flex items-center gap-2 shadow-lg hover:scale-105"
+            <Link
+              to="/auth?mode=register"
+              className="px-7 py-3.5 rounded-full text-sm font-medium tracking-wide uppercase bg-[#140f26]/80 hover:bg-[#1c1536] text-slate-200 border border-purple-500/30 hover:border-pink-500/50 backdrop-blur-md transition-all duration-300 flex items-center gap-2 shadow-lg hover:scale-105"
             >
-              <Sliders className="h-4 w-4 text-pink-400" /> Test Risk Predictor
-            </a>
+              <UserPlus className="h-4 w-4 text-pink-400" /> Register (Create Account)
+            </Link>
           </motion.div>
 
           {/* Metrics Pill Row */}
@@ -449,129 +421,11 @@ export default function Landing() {
       </section>
 
       {/* ──────────────────────────────────────────────────────────────────────────
-          3. LIVE INTERACTIVE ML RISK CALCULATOR DEMONSTRATION WIDGET
+          3. REAL-TIME AI PREDICTION ANIMATION & NEURAL TENSOR WIDGET
       ────────────────────────────────────────────────────────────────────────── */}
-      <section id="calculator" className="py-20 relative z-10 border-t border-purple-500/10">
-        <div className="max-w-7xl mx-auto px-6">
-          
-          <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
-            <span className="text-xs uppercase tracking-widest text-pink-400 font-bold block">
-              LIVE INTERACTIVE AI DEMO
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight">
-              Test the Student <span className="italic font-serif text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-300">Risk Predictor.</span>
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-300 font-light">
-              Adjust the academic parameters below to see how EduGuard's machine learning model computes real-time dropout risk and triggers intervention paths.
-            </p>
-          </div>
-
-          <div className="max-w-4xl mx-auto p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-[#140d28]/95 via-[#0f091f]/95 to-[#090514]/95 border border-purple-500/30 backdrop-blur-2xl shadow-2xl grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-            
-            {/* Left Parameter Controls */}
-            <div className="md:col-span-7 space-y-6">
-              
-              {/* Attendance Slider */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-slate-300 font-medium flex items-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5 text-pink-400" /> Attendance Percentage
-                  </span>
-                  <span className={`font-mono font-bold ${calcAttendance < 75 ? "text-red-400" : "text-emerald-400"}`}>
-                    {calcAttendance}% {calcAttendance < 75 ? "(Below 75% Limit)" : "(Eligible)"}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="40"
-                  max="100"
-                  value={calcAttendance}
-                  onChange={(e) => setCalcAttendance(Number(e.target.value))}
-                  className="w-full h-2 bg-purple-950/80 rounded-lg appearance-none cursor-pointer accent-pink-500"
-                />
-              </div>
-
-              {/* Internal Marks Slider */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-slate-300 font-medium flex items-center gap-1.5">
-                    <TrendingUp className="h-3.5 w-3.5 text-purple-400" /> Internal Marks (CIA Average)
-                  </span>
-                  <span className={`font-mono font-bold ${calcMarks < 50 ? "text-amber-400" : "text-purple-300"}`}>
-                    {calcMarks} / 100
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="20"
-                  max="100"
-                  value={calcMarks}
-                  onChange={(e) => setCalcMarks(Number(e.target.value))}
-                  className="w-full h-2 bg-purple-950/80 rounded-lg appearance-none cursor-pointer accent-purple-500"
-                />
-              </div>
-
-              {/* Arrears Counter */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-slate-300 font-medium flex items-center gap-1.5">
-                    <BookOpen className="h-3.5 w-3.5 text-indigo-400" /> Active Arrears / Backlogs
-                  </span>
-                  <span className="font-mono font-bold text-pink-300">
-                    {calcArrears} {calcArrears === 1 ? "Subject" : "Subjects"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {[0, 1, 2, 3, 4].map((num) => (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => setCalcArrears(num)}
-                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                        calcArrears === num
-                          ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md shadow-pink-500/20"
-                          : "bg-purple-950/40 text-slate-400 border border-purple-500/20 hover:text-white"
-                      }`}
-                    >
-                      {num}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-
-            {/* Right Risk Meter Result */}
-            <div className="md:col-span-5 p-6 rounded-2xl bg-[#0b0616] border border-purple-500/25 flex flex-col items-center justify-center text-center space-y-4">
-              <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
-                PREDICTED DROPOUT RISK INDEX
-              </span>
-
-              <div className="relative flex items-center justify-center">
-                <div className="text-5xl font-display font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-white">
-                  {computedRisk}%
-                </div>
-              </div>
-
-              <div className={`px-4 py-2 rounded-xl text-xs font-bold border ${riskTier.bg} ${riskTier.color}`}>
-                {riskTier.label}
-              </div>
-
-              <div className="text-[11px] text-slate-300 leading-snug border-t border-purple-500/20 pt-3">
-                <span className="text-pink-300 font-semibold block mb-0.5">Automated Action:</span>
-                {riskTier.action}
-              </div>
-
-              <Link
-                to="/auth"
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold uppercase tracking-wider text-white shadow-md hover:opacity-90 transition-opacity flex items-center justify-center"
-              >
-                View in Live Portal ➔
-              </Link>
-            </div>
-
-          </div>
-
+      <section id="calculator" className="py-12 sm:py-20 relative z-10 border-t border-purple-500/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <AIPredictionAnimation />
         </div>
       </section>
 
@@ -593,10 +447,10 @@ export default function Landing() {
             </div>
             
             <Link
-              to="/auth"
+              to={portalDestination}
               className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-semibold text-purple-300 hover:text-pink-300 group transition-colors"
             >
-              Access Faculty Modules
+              {user || isAuthenticated ? "Open Faculty Dashboard" : "Access Faculty Modules"}
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -838,20 +692,9 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Process Right Archway Graphic */}
+            {/* Process Right College Campus Holographic Showcase */}
             <div className="lg:col-span-5 flex items-center justify-center relative">
-              <div className="relative w-full max-w-[380px] h-[480px] rounded-3xl overflow-hidden border border-pink-500/30 shadow-[0_0_60px_rgba(236,72,153,0.25)] group">
-                <img
-                  src={portalArch}
-                  alt="KPRCAS Student Journey Portal"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#080511] via-transparent to-transparent opacity-80" />
-                <div className="absolute bottom-6 inset-x-6 p-4 rounded-2xl bg-[#100a20]/90 border border-pink-500/30 backdrop-blur-md text-center">
-                  <p className="text-xs uppercase tracking-widest text-pink-300 font-bold">KPRCAS STUDENT SUCCESS GATEWAY</p>
-                  <p className="text-[11px] text-slate-300 mt-1 font-light">Guiding every student towards academic excellence.</p>
-                </div>
-              </div>
+              <CollegeCampusShowcase imageUrl="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdP-RRJw9azqzZPRS0X-mnx3PdXPS5QsgS4CX97vPFypWutU4AuuXr69W8&s=10" />
             </div>
 
           </div>

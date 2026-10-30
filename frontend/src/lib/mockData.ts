@@ -12,9 +12,15 @@ export const mockStudents: Student[] = [
 ];
 
 export const mockMentors: Mentor[] = [
-  { id: "m1", name: "Dr. Rajesh Verma", email: "rajesh@school.edu", specialization: "Academic Counseling", studentsAssigned: 12 },
-  { id: "m2", name: "Prof. Sunita Das", email: "sunita@school.edu", specialization: "Behavioral Support", studentsAssigned: 8 },
-  { id: "m3", name: "Dr. Anil Kapoor", email: "anil@school.edu", specialization: "Career Guidance", studentsAssigned: 15 },
+  { id: "m1", name: "Ramesh kumar", email: "ramesh.kumar@kprcas.ac.in", specialization: "Head of Mentorship & CSE Academic Counseling", studentsAssigned: 14 },
+  { id: "m2", name: "Manoj", email: "manoj@kprcas.ac.in", specialization: "AI & Data Science Student Guidance", studentsAssigned: 12 },
+  { id: "m3", name: "brindaa", email: "brindaa@kprcas.ac.in", specialization: "Electronics & Communication Support", studentsAssigned: 11 },
+  { id: "m4", name: "sathayavathy", email: "sathayavathy@kprcas.ac.in", specialization: "Information Technology & Risk Advisory", studentsAssigned: 15 },
+  { id: "m5", name: "keerthi", email: "keerthi@kprcas.ac.in", specialization: "Commerce & Arrears Recovery Lead", studentsAssigned: 10 },
+  { id: "m6", name: "jayathi", email: "jayathi@kprcas.ac.in", specialization: "Management Studies Retention Mentor", studentsAssigned: 13 },
+  { id: "m7", name: "Dr. Rajesh Verma", email: "rajesh@school.edu", specialization: "Academic Counseling", studentsAssigned: 12 },
+  { id: "m8", name: "Prof. Sunita Das", email: "sunita@school.edu", specialization: "Behavioral Support", studentsAssigned: 8 },
+  { id: "m9", name: "Dr. Anil Kapoor", email: "anil@school.edu", specialization: "Career Guidance", studentsAssigned: 15 },
 ];
 
 export const mockSessions: Session[] = [

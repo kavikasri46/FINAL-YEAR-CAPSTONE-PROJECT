@@ -25,6 +25,15 @@ interface TimetableEntry {
   status?: string;
 }
 
+const ADMIN_MENTORS = [
+  { name: "Ramesh kumar", role: "Head of Mentorship & CSE Advisory", email: "ramesh.kumar@kprcas.ac.in", students: 14, status: "Available", color: "from-pink-500 to-purple-600" },
+  { name: "Manoj", role: "Senior Mentor, AI & Data Science", email: "manoj@kprcas.ac.in", students: 12, status: "Active Session", color: "from-purple-500 to-indigo-600" },
+  { name: "brindaa", role: "Faculty Counselor, ECE Department", email: "brindaa@kprcas.ac.in", students: 11, status: "Available", color: "from-cyan-500 to-blue-600" },
+  { name: "sathayavathy", role: "Information Technology & Risk Mentor", email: "sathayavathy@kprcas.ac.in", students: 15, status: "In Counseling", color: "from-emerald-500 to-teal-600" },
+  { name: "keerthi", role: "Commerce & Arrears Turnaround Lead", email: "keerthi@kprcas.ac.in", students: 10, status: "Available", color: "from-amber-500 to-orange-600" },
+  { name: "jayathi", role: "Management Studies Retention Mentor", email: "jayathi@kprcas.ac.in", students: 13, status: "Available", color: "from-rose-500 to-pink-600" },
+];
+
 export default function AdminDashboard() {
   const highRisk = mockStudents.filter(s => s.riskLevel === "high");
   const unreadAlerts = mockNotifications.filter(n => !n.read);
@@ -32,6 +41,7 @@ export default function AdminDashboard() {
   const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
   const [uploadStatus, setUploadStatus] = useState("");
   const [notification, setNotification] = useState<{show: boolean, message: string}>({show: false, message: ""});
+  const [predictedMentorResult, setPredictedMentorResult] = useState<string | null>(null);
 
   /* EXCEL TIMETABLE UPLOAD FUNCTION */
   const handleTimetableUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,18 +81,26 @@ export default function AdminDashboard() {
     reader.readAsArrayBuffer(file);
   };
 
-  /* AI MENTOR PREDICTION */
+  /* AI MENTOR PREDICTION (ALL 6 MENTORS) */
   const predictFreeMentor = () => {
     const trainingData = [
       [1,0],
       [2,1],
       [3,0],
-      [4,1]
+      [4,1],
+      [5,0],
+      [6,1]
     ];
-    const mentors = ["Ravi", "Meena", "Arjun", "Kumar"];
+    const mentors = ["Ramesh kumar", "Manoj", "brindaa", "sathayavathy", "keerthi", "jayathi"];
     const knn = new KNN(trainingData, mentors);
-    const result = knn.predict([[2,0]]);
-    alert("AI Assigned Mentor: " + result + ". CSDA class is free now. A mentor can take the session.");
+    const result = knn.predict([[2,0]]) as unknown as string;
+    const msg = `AI Assigned Free Mentor: ${result}. CSDA class is free now. Mentor ${result} has been assigned to take the session.`;
+    setPredictedMentorResult(msg);
+    setNotification({
+      show: true,
+      message: `AI Prediction: Assigned Mentor ${result} to take the upcoming free session.`
+    });
+    alert(msg);
   };
 
   return (
@@ -177,17 +195,100 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Timetable upload */}
+      {/* ASSIGNED FACULTY MENTORS DIRECTORY */}
+      <Card className="glass-card border-border/50">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <UserCheck className="h-5 w-5 text-pink-400" />
+                <span>Assigned Faculty Mentors Directory ({ADMIN_MENTORS.length})</span>
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Real-time active mentors roster for student counseling & early warning interventions
+              </p>
+            </div>
+            <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 w-fit">
+              ● All 6 Mentors Synchronized
+            </span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {ADMIN_MENTORS.map((m, idx) => (
+              <motion.div
+                key={m.name}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.07 }}
+                className="p-4 rounded-xl border border-border/60 bg-card/60 hover:border-pink-500/40 hover:bg-card/90 transition-all duration-200 space-y-3 shadow-sm hover:shadow-md"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${m.color} text-white font-bold text-xs flex items-center justify-center shadow-md`}>
+                      {m.name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm text-foreground">{m.name}</h4>
+                      <p className="text-[11px] text-muted-foreground leading-tight">{m.role}</p>
+                    </div>
+                  </div>
+                  <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full font-bold ${
+                    m.status === "Available"
+                      ? "bg-emerald-950/70 text-emerald-300 border border-emerald-500/30"
+                      : "bg-purple-950/70 text-purple-300 border border-purple-500/30"
+                  }`}>
+                    {m.status}
+                  </span>
+                </div>
+
+                <div className="pt-2.5 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1 font-mono text-[11px]">
+                    <Users className="h-3.5 w-3.5 text-pink-400" />
+                    <strong className="text-foreground">{m.students}</strong> students assigned
+                  </span>
+                  <span className="text-[10px] font-mono opacity-80">{m.email}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Timetable upload & AI Mentor Dispatch */}
       <Card className="glass-card border-border/50">
         <CardHeader>
-          <CardTitle className="text-sm font-semibold">Upload Timetable (Excel)</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <span>Upload Timetable & AI Mentor Dispatch</span>
+            </CardTitle>
+            <span className="text-xs text-muted-foreground">XLSX / XLS formats</span>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <input type="file" accept=".xlsx,.xls" onChange={handleTimetableUpload} />
-          <button onClick={predictFreeMentor} className="px-4 py-2 bg-primary text-white rounded">
-            Predict Free Mentor
-          </button>
-          <p className="text-xs text-muted-foreground">{uploadStatus}</p>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <input type="file" accept=".xlsx,.xls" onChange={handleTimetableUpload} className="text-xs" />
+            <button
+              onClick={predictFreeMentor}
+              className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white text-xs font-semibold rounded-lg shadow-md hover:scale-105 transition-all"
+            >
+              Predict & Assign Free Mentor
+            </button>
+          </div>
+
+          {predictedMentorResult && (
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-3 rounded-lg bg-pink-950/50 border border-pink-500/40 text-pink-200 text-xs font-mono"
+            >
+              ✓ {predictedMentorResult}
+            </motion.div>
+          )}
+
+          {uploadStatus && (
+            <p className="text-xs text-muted-foreground font-mono">{uploadStatus}</p>
+          )}
         </CardContent>
       </Card>
     </div>

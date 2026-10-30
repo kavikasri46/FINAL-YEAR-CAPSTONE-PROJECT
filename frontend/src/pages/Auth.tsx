@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +20,17 @@ const roles: { value: UserRole; label: string; icon: typeof GraduationCap; desc:
 
 export default function Auth() {
   const { login, register, loginAsDemo, isAuthenticated } = useAuth();
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [searchParams] = useSearchParams();
+  const paramMode = searchParams.get("mode");
+  const [mode, setMode] = useState<"login" | "register">(paramMode === "register" ? "register" : "login");
+
+  useEffect(() => {
+    const m = searchParams.get("mode");
+    if (m === "register" || m === "login") {
+      setMode(m);
+    }
+  }, [searchParams]);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +40,12 @@ export default function Auth() {
   const [successMsg, setSuccessMsg] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  if (isAuthenticated) return <Navigate to="/" />;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+
+  const handleDemoLogin = (role: UserRole) => {
+    setSelectedRole(role);
+    loginAsDemo(role);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +58,7 @@ export default function Auth() {
         if (!name.trim()) { setError("Name is required."); setSubmitting(false); return; }
         if (password.length < 6) { setError("Password must be at least 6 characters."); setSubmitting(false); return; }
         if (password !== confirmPassword) { setError("Passwords do not match."); setSubmitting(false); return; }
+        
         const err = await register(name, email, password, selectedRole);
         if (err) {
           setError(err);
@@ -59,8 +75,9 @@ export default function Auth() {
       }
     } catch {
       setError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   return (
@@ -69,73 +86,58 @@ export default function Auth() {
       <div className="absolute top-10 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[120px] animate-pulse-glow pointer-events-none" />
       <div className="absolute bottom-10 right-1/4 w-80 h-80 bg-pink-500/10 rounded-full blur-[100px] animate-float pointer-events-none" />
 
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-between p-12 xl:p-16 text-white">
         <img
           src={mode === "login" ? loginBg : registerBg}
           alt=""
           className="absolute inset-0 w-full h-full object-cover scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-purple-900/30 via-transparent to-transparent" />
-        <div className="relative z-10 flex flex-col justify-center px-16 text-white">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-          >
-            <motion.div
-              className="flex items-center gap-3 mb-8"
-              animate={{ scale: [1, 1.02, 1] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <div className="relative">
-                <div className="absolute inset-0 bg-purple-500/30 rounded-xl blur-md animate-pulse-glow" />
-                <img src={collegeLogo} alt="KPR College" className="h-14 w-14 rounded-xl object-cover ring-2 ring-purple-400/50 relative" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-display font-bold text-gradient">EduGuard</h1>
-                <p className="text-xs opacity-70 uppercase tracking-wider">Dropout Prevention System</p>
-              </div>
-            </motion.div>
-            <motion.h2
-              className="text-4xl font-display font-bold leading-tight mb-4"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-            >
-              Predict. Prevent.<br />Protect futures.
-            </motion.h2>
-            <motion.p
-              className="text-lg opacity-80 max-w-md"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-            >
-              AI-powered early warning system that identifies at-risk students before it's too late.
-            </motion.p>
-            <motion.div
-              className="mt-12 grid grid-cols-3 gap-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-            >
-              {[
-                { label: "Students Monitored", value: "2,400+" },
-                { label: "Dropouts Prevented", value: "340" },
-                { label: "Prediction Accuracy", value: "94%" },
-              ].map((stat, i) => (
-                <motion.div
-                  key={stat.label}
-                  className="text-center"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <p className="text-2xl font-display font-bold text-gradient">{stat.value}</p>
-                  <p className="text-xs opacity-60 mt-1">{stat.label}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </motion.div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-purple-950/60 via-transparent to-transparent" />
+
+        {/* Top Header Branding */}
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="absolute inset-0 bg-pink-500/30 rounded-xl blur-md animate-pulse-glow" />
+              <img src={collegeLogo} alt="KPR College" className="h-14 w-14 rounded-xl object-cover ring-2 ring-pink-500/50 relative bg-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-display font-bold text-gradient">EduGuard</h1>
+              <p className="text-xs text-pink-300 font-medium uppercase tracking-widest">KPRCAS Dropout Prevention</p>
+            </div>
+          </div>
+
+          <span className="px-3.5 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-purple-950/70 border border-pink-500/30 text-pink-300 shadow-[0_0_12px_rgba(236,72,153,0.2)]">
+            Institutional Portal
+          </span>
+        </div>
+
+        {/* Center Headline & Mission */}
+        <div className="relative z-10 my-auto py-8 max-w-lg space-y-5">
+          <h2 className="text-4xl sm:text-5xl font-display font-bold leading-tight">
+            Predict. Prevent.<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-white">
+              Protect futures.
+            </span>
+          </h2>
+          <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-light">
+            AI-powered early warning system that identifies at-risk students before it's too late. Empowering faculty mentors and parents with real-time academic intelligence.
+          </p>
+        </div>
+
+        {/* Bottom stats banner */}
+        <div className="relative z-10 grid grid-cols-3 gap-6 pt-6 border-t border-purple-500/25">
+          {[
+            { label: "Students Monitored", value: "2,400+" },
+            { label: "Dropouts Prevented", value: "340" },
+            { label: "Prediction Accuracy", value: "94.8%" },
+          ].map((stat) => (
+            <div key={stat.label}>
+              <p className="text-2xl sm:text-3xl font-display font-bold text-gradient">{stat.value}</p>
+              <p className="text-xs text-slate-300/80 mt-1">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -165,15 +167,20 @@ export default function Auth() {
         >
           <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-purple-500/20 rounded-2xl blur-xl animate-pulse-glow pointer-events-none" />
           <div className="relative bg-card border border-purple-500/20 rounded-2xl p-8 backdrop-blur-sm shadow-2xl">
-            <div className="lg:hidden flex items-center gap-2 mb-6">
-              <div className="relative">
-                <div className="absolute inset-0 bg-purple-500/30 rounded-full blur-sm" />
-                <img src={collegeLogo} alt="KPR" className="h-8 w-8 rounded-full object-cover relative" />
+            <div className="lg:hidden flex items-center justify-between gap-3 mb-6 p-3 rounded-xl bg-purple-950/40 border border-pink-500/30">
+              <div className="flex items-center gap-2.5">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-pink-500/30 rounded-xl blur-sm" />
+                  <img src={collegeLogo} alt="KPR" className="h-8 w-8 rounded-lg object-contain relative bg-white p-0.5" />
+                </div>
+                <div>
+                  <h1 className="text-base font-display font-bold text-gradient">EduGuard</h1>
+                  <p className="text-[9px] uppercase tracking-widest text-pink-300 font-semibold">3D AI Neural Dossier</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-display font-bold text-gradient">KPRCAS EduGuard</h1>
-                <p className="text-[9px] uppercase tracking-widest text-purple-400/80">Learn Beyond</p>
-              </div>
+              <span className="text-[9px] font-mono text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/30 font-bold">
+                SECURED
+              </span>
             </div>
 
             <div className="flex border rounded-lg p-1 mb-6 bg-muted/50 relative">
@@ -316,12 +323,11 @@ export default function Auth() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        loginAsDemo(value);
-                      }}
-                      className="text-xs gap-1.5 justify-start hover:border-purple-500/50 hover:bg-purple-500/10"
+                      onClick={() => handleDemoLogin(value)}
+                      disabled={submitting}
+                      className="text-xs gap-1.5 justify-start hover:border-pink-500/50 hover:bg-pink-500/10 transition-all duration-200"
                     >
-                      <Icon className="h-3.5 w-3.5 text-purple-400" />
+                      <Icon className="h-3.5 w-3.5 text-pink-400" />
                       {label} Demo
                     </Button>
                   ))}

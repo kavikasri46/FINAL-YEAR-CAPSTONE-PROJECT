@@ -99,7 +99,7 @@ export default function AcademicRecords() {
                 onChange={(e) => { setDept(e.target.value); setPage(1); }}
                 className="bg-transparent text-sm outline-none text-foreground cursor-pointer"
               >
-                {DEPTS.map((d) => <option key={d} value={d} className="bg-black">{d || "All Depts"}</option>)}
+                {DEPTS.map((d, di) => <option key={`dept-${d || "all"}-${di}`} value={d} className="bg-black">{d || "All Depts"}</option>)}
               </select>
             </div>
             <div className="flex items-center gap-2 glass-card rounded-lg border border-border/50 px-3 py-2">
@@ -108,7 +108,7 @@ export default function AcademicRecords() {
                 onChange={(e) => { setRisk(e.target.value); setPage(1); }}
                 className="bg-transparent text-sm outline-none text-foreground cursor-pointer"
               >
-                {RISKS.map((r) => <option key={r} value={r} className="bg-black">{r ? r.charAt(0).toUpperCase() + r.slice(1) + " Risk" : "All Risk Levels"}</option>)}
+                {RISKS.map((r, ri) => <option key={`risk-${r || "all"}-${ri}`} value={r} className="bg-black">{r ? r.charAt(0).toUpperCase() + r.slice(1) + " Risk" : "All Risk Levels"}</option>)}
               </select>
             </div>
           </div>
@@ -153,7 +153,7 @@ export default function AcademicRecords() {
               ) : (
                 records.map((r, i) => (
                   <motion.tr
-                    key={r._id}
+                    key={r._id || r.id || r.registerNo || r.studentId || `rec-${i}`}
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.03 }}
@@ -161,15 +161,15 @@ export default function AcademicRecords() {
                   >
                     <td className="px-4 py-3">
                       <div>
-                        <p className="font-medium text-xs">{r.name}</p>
-                        <p className="text-[10px] text-muted-foreground">{r.studentId}</p>
+                        <p className="font-medium text-xs">{r.name || (r as any).studentName || "—"}</p>
+                        <p className="text-[10px] text-muted-foreground">{r.studentId || r.registerNo}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{r.registerNo}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">{r.registerNo || r.studentId || "—"}</td>
                     <td className="px-4 py-3">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary">{r.department}</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary">{r.department || "CSDA"}</span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{r.year}/{r.semester}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">{r.year ?? 3}/{r.semester ?? 6}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">

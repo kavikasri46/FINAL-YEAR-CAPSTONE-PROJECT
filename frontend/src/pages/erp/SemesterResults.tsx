@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Fragment } from "react";
 import { motion } from "framer-motion";
 import { Search, Filter, RefreshCw, ChevronLeft, ChevronRight, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -120,7 +120,7 @@ export default function SemesterResults() {
         <div className="flex items-center gap-2 glass-card rounded-xl border border-border/50 px-3 py-2">
           <Filter className="h-3.5 w-3.5 text-muted-foreground" />
           <select value={sem} onChange={(e) => { setSem(e.target.value); setPage(1); }} className="bg-transparent text-sm outline-none text-foreground cursor-pointer">
-            {SEMESTERS.map((s) => <option key={s} value={s} className="bg-black">{s ? `Semester ${s}` : "All Semesters"}</option>)}
+            {SEMESTERS.map((s, si) => <option key={`sem-${s || "all"}-${si}`} value={s} className="bg-black">{s ? `Semester ${s}` : "All Semesters"}</option>)}
           </select>
         </div>
       </div>
@@ -153,9 +153,9 @@ export default function SemesterResults() {
                 </tr>
               ) : (
                 records.map((r, i) => (
-                  <>
+                  <Fragment key={r._id || r.id || `${r.studentId || "sem"}-${r.semester || i}-${i}`}>
                     <motion.tr
-                      key={r._id}
+                      key={`row-${r._id || r.id || i}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: i * 0.025 }}
@@ -198,9 +198,9 @@ export default function SemesterResults() {
                       <tr className="bg-white/2 border-b border-border/20">
                         <td colSpan={10} className="px-6 py-3">
                           <div className="flex flex-wrap gap-2">
-                            {r.subjects.map((s) => (
+                            {r.subjects.map((s, si) => (
                               <div
-                                key={s.subjectCode}
+                                key={s.subjectCode || si}
                                 className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px]"
                                 style={{
                                   background: s.passFail === "Fail" ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.05)",
@@ -224,7 +224,7 @@ export default function SemesterResults() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 ))
               )}
             </tbody>

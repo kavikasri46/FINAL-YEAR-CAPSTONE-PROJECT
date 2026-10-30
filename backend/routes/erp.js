@@ -211,7 +211,7 @@ async function dbOrMemfind(collection, filter = {}, opts = {}) {
       if (opts.sort) q = q.sort(opts.sort);
       if (opts.skip) q = q.skip(opts.skip);
       if (opts.limit) q = q.limit(opts.limit);
-      if (opts.lean) q = q.lean();
+      if (opts.lean !== false) q = q.lean();
       return q.exec();
     }
   }
@@ -569,10 +569,17 @@ router.get("/erp/academic-records", verifyToken, async (req, res) => {
     const allResults = await dbOrMemfind("semesterResults");
 
     const enriched = paged.map((s) => {
-      const report = allReports.find((r) => r.studentId === s.studentId) || null;
-      const result = allResults.find((r) => r.studentId === s.studentId) || null;
+      const studentObj = s.toObject ? s.toObject() : s;
+      const studentId = studentObj.studentId;
+      const report = allReports.find((r) => r.studentId === studentId) || null;
+      const result = allResults.find((r) => r.studentId === studentId) || null;
       return {
-        ...s,
+        ...studentObj,
+        name: studentObj.name || report?.studentName || "Student",
+        registerNo: studentObj.registerNo || studentObj.studentId || "—",
+        department: studentObj.department || "Computer Science with Data Analytics",
+        year: studentObj.year || 3,
+        semester: studentObj.semester || 6,
         markScore: report?.marksScore ?? 0,
         report,
         result: result ? { ...result, arrears: result.backlogs || 0 } : null,

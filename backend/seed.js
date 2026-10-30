@@ -18,6 +18,12 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://kavikasri46_db_user:Ka
 const DEMO_USERS = [
   { name: "Admin User", email: "admin@school.edu", password: "password", role: "admin" },
   { name: "Dr. Rajesh Verma", email: "rajesh@school.edu", password: "password", role: "mentor" },
+  { name: "Ramesh kumar", email: "ramesh.kumar@kprcas.ac.in", password: "password", role: "mentor" },
+  { name: "Manoj", email: "manoj@kprcas.ac.in", password: "password", role: "mentor" },
+  { name: "brindaa", email: "brindaa@kprcas.ac.in", password: "password", role: "mentor" },
+  { name: "sathayavathy", email: "sathayavathy@kprcas.ac.in", password: "password", role: "mentor" },
+  { name: "keerthi", email: "keerthi@kprcas.ac.in", password: "password", role: "mentor" },
+  { name: "jayathi", email: "jayathi@kprcas.ac.in", password: "password", role: "mentor" },
   { name: "Arjun Patel", email: "arjun@school.edu", password: "password", role: "student" },
   { name: "Mr. Patel", email: "parent@school.edu", password: "password", role: "parent" },
 ];

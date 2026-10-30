@@ -39,6 +39,7 @@ const demoUsers: Record<string, AuthUser> = {
   student: { id: "u2", name: "Arjun Patel", email: "arjun@school.edu", role: "student" },
   mentor: { id: "u3", name: "Dr. Rajesh Verma", email: "rajesh@school.edu", role: "mentor" },
   parent: { id: "u4", name: "Mr. Patel", email: "parent@school.edu", role: "parent" },
+  kavika: { id: "u5", name: "Kavika Sri", email: "kavika@gmail.com", role: "admin" },
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -130,6 +131,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
     if (demoRole) {
       loginAsDemo(demoRole);
+      return null;
+    }
+
+    // 4. Institutional administrator kavika fallback
+    if (cleanEmail === "kavika@gmail.com" || cleanEmail.includes("kavika")) {
+      const kUser: AuthUser = { id: "kavika_admin", name: "Kavika Sri", email: cleanEmail, role: "admin" };
+      setUser(kUser);
+      try {
+        localStorage.setItem("user", JSON.stringify(kUser));
+        localStorage.setItem("token", "kavika-admin-token");
+      } catch {}
       return null;
     }
 

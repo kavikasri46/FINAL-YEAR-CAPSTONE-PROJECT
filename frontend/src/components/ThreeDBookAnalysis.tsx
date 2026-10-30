@@ -107,7 +107,7 @@ const SAMPLE_STUDENTS: StudentSample[] = [
 
 export default function ThreeDBookAnalysis() {
   const [selectedStudentIdx, setSelectedStudentIdx] = useState(0);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [activePage, setActivePage] = useState<1 | 2>(1);
   const [isScanning, setIsScanning] = useState(false);
   const [scanStep, setScanStep] = useState(0);
