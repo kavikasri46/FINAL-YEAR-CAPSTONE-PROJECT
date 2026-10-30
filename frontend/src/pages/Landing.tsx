@@ -33,6 +33,7 @@ import { api } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 import kprLogo from "@/images/kpr logo.jpg";
 import portalArch from "@/images/portal_arch.jpg";
+import ThreeDBookAnalysis from "@/components/ThreeDBookAnalysis";
 
 interface ModuleItem {
   id: string;
@@ -277,6 +278,9 @@ export default function Landing() {
             <a href="#overview" className="hover:text-pink-400 transition-colors flex items-center gap-1.5 font-medium text-white">
               <span className="h-1.5 w-1.5 rounded-full bg-pink-400 shadow-[0_0_8px_#f472b6]" /> Overview
             </a>
+            <a href="#3d-dossier" className="hover:text-pink-400 transition-colors text-slate-400 hover:text-white flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-pink-400" /> 3D Dossier
+            </a>
             <a href="#calculator" className="hover:text-pink-400 transition-colors text-slate-400 hover:text-white">
               Risk Predictor
             </a>
@@ -432,6 +436,15 @@ export default function Landing() {
             </div>
           </div>
 
+        </div>
+      </section>
+
+      {/* ──────────────────────────────────────────────────────────────────────────
+          2.5. 3D ANIMATED BOOK OPENING & NEURAL SCANNER SHOWCASE
+      ────────────────────────────────────────────────────────────────────────── */}
+      <section id="3d-dossier" className="py-8 sm:py-16 relative z-20 border-t border-purple-500/10 bg-gradient-to-b from-transparent via-[#0f0923]/40 to-transparent">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <ThreeDBookAnalysis />
         </div>
       </section>
 

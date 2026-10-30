@@ -95,28 +95,55 @@ export function SessionManagerCard({ title = "Live Mentorship & Student Sessions
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newSession: SessionItem = {
-      _id: "s" + Date.now(),
-      title: form.title,
-      description: form.description,
-      date: form.date,
-      time: form.time,
-      youtubeUrl: form.youtubeUrl,
-      type: form.type,
-      status: "scheduled",
-      createdBy: user?.id || "admin",
-      createdByName: user?.name || (user?.role === "admin" ? "Admin User" : "Faculty Mentor"),
-      assignedTo: [],
-      createdAt: new Date().toISOString(),
-    };
-
-    const updated = [newSession, ...sessions];
-    setSessions(updated);
-    saveLocalSessions(updated);
-
     try {
-      await api.createSession(newSession);
-    } catch {}
+      const serverSession = await api.createSession({
+        title: form.title,
+        description: form.description,
+        date: form.date,
+        time: form.time,
+        youtubeUrl: form.youtubeUrl,
+        type: form.type,
+      });
+
+      const sessionToAdd: SessionItem = serverSession || {
+        _id: "s" + Date.now(),
+        title: form.title,
+        description: form.description,
+        date: form.date,
+        time: form.time,
+        youtubeUrl: form.youtubeUrl,
+        type: form.type,
+        status: "scheduled",
+        createdBy: user?.id || "admin",
+        createdByName: user?.name || (user?.role === "admin" ? "Admin User" : "Faculty Mentor"),
+        assignedTo: [],
+        createdAt: new Date().toISOString(),
+      };
+
+      const updated = [sessionToAdd, ...sessions];
+      setSessions(updated);
+      saveLocalSessions(updated);
+      showToast("Session scheduled & saved to MongoDB Atlas!");
+    } catch (err) {
+      const fallbackSession: SessionItem = {
+        _id: "s" + Date.now(),
+        title: form.title,
+        description: form.description,
+        date: form.date,
+        time: form.time,
+        youtubeUrl: form.youtubeUrl,
+        type: form.type,
+        status: "scheduled",
+        createdBy: user?.id || "admin",
+        createdByName: user?.name || (user?.role === "admin" ? "Admin User" : "Faculty Mentor"),
+        assignedTo: [],
+        createdAt: new Date().toISOString(),
+      };
+      const updated = [fallbackSession, ...sessions];
+      setSessions(updated);
+      saveLocalSessions(updated);
+      showToast("Session saved!");
+    }
 
     setForm({
       title: "",
@@ -127,19 +154,21 @@ export function SessionManagerCard({ title = "Live Mentorship & Student Sessions
       type: "mentor-student",
     });
     setShowCreate(false);
-    showToast("Session scheduled & live updated on Student Dashboard!");
   };
 
   const handleStatusChange = async (id: string, status: string) => {
-    const updated = sessions.map((s) => (s._id === id ? { ...s, status } : s));
-    setSessions(updated);
-    saveLocalSessions(updated);
-
     try {
-      await api.updateSession(id, { status });
-    } catch {}
-
-    showToast(`Session marked as ${status.toUpperCase()} (synced to students)`);
+      const res = await api.updateSession(id, { status });
+      const updated = sessions.map((s) => (s._id === id ? { ...s, ...(res || {}), status } : s));
+      setSessions(updated);
+      saveLocalSessions(updated);
+      showToast(`Session marked as ${status.toUpperCase()} (saved in MongoDB)`);
+    } catch (err) {
+      const updated = sessions.map((s) => (s._id === id ? { ...s, status } : s));
+      setSessions(updated);
+      saveLocalSessions(updated);
+      showToast(`Session marked as ${status.toUpperCase()}`);
+    }
   };
 
   const startEdit = (s: SessionItem) => {
@@ -155,16 +184,20 @@ export function SessionManagerCard({ title = "Live Mentorship & Student Sessions
   };
 
   const saveEdit = async (id: string) => {
-    const updated = sessions.map((s) => (s._id === id ? { ...s, ...editForm } : s));
-    setSessions(updated);
-    saveLocalSessions(updated);
-    setEditingId(null);
-
     try {
-      await api.updateSession(id, editForm);
-    } catch {}
-
-    showToast("Session updated & broadcast to students!");
+      const res = await api.updateSession(id, editForm);
+      const updated = sessions.map((s) => (s._id === id ? { ...s, ...(res || {}), ...editForm } : s));
+      setSessions(updated);
+      saveLocalSessions(updated);
+      setEditingId(null);
+      showToast("Session updated & saved in MongoDB Atlas!");
+    } catch (err) {
+      const updated = sessions.map((s) => (s._id === id ? { ...s, ...editForm } : s));
+      setSessions(updated);
+      saveLocalSessions(updated);
+      setEditingId(null);
+      showToast("Session updated!");
+    }
   };
 
   const handleDelete = async (id: string) => {

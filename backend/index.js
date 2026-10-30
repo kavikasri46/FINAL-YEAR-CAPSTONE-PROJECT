@@ -13,7 +13,11 @@ import contactRoutes from "./routes/contact.js";
 
 const app = express();
 const PORT = process.env.PORT || 5001;
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://kavikasri46_db_user:Kavika246@cluster0.ulib1zn.mongodb.net/eduguard?retryWrites=true&w=majority";
+let rawUri = process.env.MONGO_URI || "mongodb+srv://kavikasri46_db_user:Kavika246@cluster0.ulib1zn.mongodb.net/eduguard?retryWrites=true&w=majority";
+if (rawUri.includes("ZbiAkbNFwAyIahbX")) {
+  rawUri = rawUri.replace("ZbiAkbNFwAyIahbX", "Kavika246");
+}
+const MONGO_URI = rawUri;
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));

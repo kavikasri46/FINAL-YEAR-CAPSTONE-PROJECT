@@ -135,19 +135,36 @@ router.put("/:id", verifyToken, async (req, res) => {
 
     if (isDbConnected()) {
       try {
-        updatedSession = await Session.findByIdAndUpdate(id, req.body, { new: true });
+        if (mongoose.Types.ObjectId.isValid(id) && id.length === 24) {
+          updatedSession = await Session.findByIdAndUpdate(id, { $set: req.body }, { new: true });
+        }
+        if (!updatedSession) {
+          const query = {
+            $or: [
+              { sessionId: id },
+              { _id: mongoose.Types.ObjectId.isValid(id) ? id : new mongoose.Types.ObjectId() },
+            ],
+          };
+          if (req.body.title) query.$or.push({ title: req.body.title });
+
+          updatedSession = await Session.findOneAndUpdate(
+            query,
+            { $set: { ...req.body, sessionId: id } },
+            { new: true, upsert: true }
+          );
+        }
       } catch (dbErr) {
         console.warn("MongoDB update session fallback:", dbErr.message);
       }
     }
 
     // Also update in-memory
-    const idx = inMemorySessions.findIndex((s) => s._id === id || s._id?.toString() === id);
+    const idx = inMemorySessions.findIndex((s) => s._id === id || s._id?.toString() === id || s.sessionId === id);
     if (idx !== -1) {
       inMemorySessions[idx] = { ...inMemorySessions[idx], ...req.body };
-      updatedSession = inMemorySessions[idx];
+      if (!updatedSession) updatedSession = inMemorySessions[idx];
     } else if (!updatedSession) {
-      const createdFallback = { _id: id, ...req.body };
+      const createdFallback = { _id: id, sessionId: id, ...req.body };
       inMemorySessions.unshift(createdFallback);
       updatedSession = createdFallback;
     }
@@ -168,12 +185,16 @@ router.delete("/:id", verifyToken, async (req, res) => {
     const { id } = req.params;
     if (isDbConnected()) {
       try {
-        await Session.findByIdAndDelete(id);
+        if (mongoose.Types.ObjectId.isValid(id) && id.length === 24) {
+          await Session.findByIdAndDelete(id);
+        } else {
+          await Session.findOneAndDelete({ $or: [{ sessionId: id }, { title: id }] });
+        }
       } catch (dbErr) {
         console.warn("MongoDB delete session fallback:", dbErr.message);
       }
     }
-    inMemorySessions = inMemorySessions.filter((s) => s._id !== id && s._id?.toString() !== id);
+    inMemorySessions = inMemorySessions.filter((s) => s._id !== id && s._id?.toString() !== id && s.sessionId !== id);
     res.json({ message: "Session deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });

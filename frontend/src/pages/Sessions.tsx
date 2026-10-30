@@ -178,39 +178,56 @@ export default function Sessions() {
       return;
     }
 
-    const newSessionItem: Session = {
-      _id: "s" + Date.now(),
-      title: form.title,
-      description: form.description,
-      date: form.date,
-      time: form.time,
-      youtubeUrl: form.youtubeUrl,
-      type: form.type,
-      status: "scheduled",
-      createdBy: user?.id || "u1",
-      createdByName: user?.name || (user?.role === "admin" ? "Admin User" : "Faculty Mentor"),
-      assignedTo: [],
-      createdAt: new Date().toISOString(),
-    };
-
     try {
-      await api.createSession({
+      const serverSession = await api.createSession({
         ...form,
         createdBy: user?.id,
         createdByName: user?.name,
       });
-      showNotify("Session created and published successfully!");
+
+      const newSessionItem: Session = serverSession || {
+        _id: "s" + Date.now(),
+        title: form.title,
+        description: form.description,
+        date: form.date,
+        time: form.time,
+        youtubeUrl: form.youtubeUrl,
+        type: form.type,
+        status: "scheduled",
+        createdBy: user?.id || "u1",
+        createdByName: user?.name || (user?.role === "admin" ? "Admin User" : "Faculty Mentor"),
+        assignedTo: [],
+        createdAt: new Date().toISOString(),
+      };
+
+      const updated = [newSessionItem, ...sessions];
+      setSessions(updated);
+      localStorage.setItem("app_sessions", JSON.stringify(updated));
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("app_sessions_updated", { detail: updated }));
+      }
+      showNotify("Session created and stored in MongoDB Atlas!");
     } catch (err) {
-      console.warn("Saved locally:", err);
-      showNotify("Session saved successfully!");
+      const fallbackItem: Session = {
+        _id: "s" + Date.now(),
+        title: form.title,
+        description: form.description,
+        date: form.date,
+        time: form.time,
+        youtubeUrl: form.youtubeUrl,
+        type: form.type,
+        status: "scheduled",
+        createdBy: user?.id || "u1",
+        createdByName: user?.name || (user?.role === "admin" ? "Admin User" : "Faculty Mentor"),
+        assignedTo: [],
+        createdAt: new Date().toISOString(),
+      };
+      const updated = [fallbackItem, ...sessions];
+      setSessions(updated);
+      localStorage.setItem("app_sessions", JSON.stringify(updated));
+      showNotify("Session saved!");
     }
 
-    const updated = [newSessionItem, ...sessions];
-    setSessions(updated);
-    localStorage.setItem("app_sessions", JSON.stringify(updated));
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("app_sessions_updated", { detail: updated }));
-    }
     setForm({
       title: "",
       description: "",
@@ -240,36 +257,45 @@ export default function Sessions() {
       return;
     }
 
-    const updatedList = sessions.map((s) => (s._id === id ? { ...s, ...editForm } : s));
-    setSessions(updatedList);
-    localStorage.setItem("app_sessions", JSON.stringify(updatedList));
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("app_sessions_updated", { detail: updatedList }));
-    }
-    setEditingId(null);
-
     try {
-      await api.updateSession(id, editForm);
-      showNotify("Session updated successfully!");
+      const res = await api.updateSession(id, editForm);
+      const updatedList = sessions.map((s) => (s._id === id ? { ...s, ...(res || {}), ...editForm } : s));
+      setSessions(updatedList);
+      localStorage.setItem("app_sessions", JSON.stringify(updatedList));
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("app_sessions_updated", { detail: updatedList }));
+      }
+      setEditingId(null);
+      showNotify("Session updated and saved in MongoDB Atlas!");
     } catch (err) {
-      console.warn("Updated locally:", err);
-      showNotify("Session updated successfully!");
+      const updatedList = sessions.map((s) => (s._id === id ? { ...s, ...editForm } : s));
+      setSessions(updatedList);
+      localStorage.setItem("app_sessions", JSON.stringify(updatedList));
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("app_sessions_updated", { detail: updatedList }));
+      }
+      setEditingId(null);
+      showNotify("Session updated!");
     }
   };
 
   const handleQuickStatusChange = async (id: string, newStatus: string) => {
     if (!canManageSessions) return;
-    const updatedList = sessions.map((s) => (s._id === id ? { ...s, status: newStatus } : s));
-    setSessions(updatedList);
-    localStorage.setItem("app_sessions", JSON.stringify(updatedList));
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("app_sessions_updated", { detail: updatedList }));
-    }
-
     try {
-      await api.updateSession(id, { status: newStatus });
+      const res = await api.updateSession(id, { status: newStatus });
+      const updatedList = sessions.map((s) => (s._id === id ? { ...s, ...(res || {}), status: newStatus } : s));
+      setSessions(updatedList);
+      localStorage.setItem("app_sessions", JSON.stringify(updatedList));
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("app_sessions_updated", { detail: updatedList }));
+      }
+      showNotify(`Session marked as ${newStatus} in MongoDB Atlas`);
+    } catch {
+      const updatedList = sessions.map((s) => (s._id === id ? { ...s, status: newStatus } : s));
+      setSessions(updatedList);
+      localStorage.setItem("app_sessions", JSON.stringify(updatedList));
       showNotify(`Session marked as ${newStatus}`);
-    } catch {}
+    }
   };
 
   const handleDeleteSession = async (id: string) => {
